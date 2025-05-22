@@ -3,40 +3,55 @@ import numpy as np
 import pandas as pd
 
 
-# State to save.
+# state to save
 if "all_runs" not in st.session_state:
-    st.session_state.all_runs = ["Default"]
+    st.session_state.all_runs = ["default"]
 if "all_runs_index" not in st.session_state:
     st.session_state.all_runs_index = 0
 
 
-# Sidebar
+# sidebar
 with st.sidebar:
-    active_run = st.selectbox(
-        "Name", st.session_state.all_runs, index=st.session_state.all_runs_index
+    # handle selectbox selection first
+    selected_index = st.selectbox(
+        "name",
+        range(len(st.session_state.all_runs)),
+        format_func=lambda x: st.session_state.all_runs[x],
+        index=st.session_state.all_runs_index,
+        key="run_selector",
     )
 
+    # update index if changed
+    if selected_index != st.session_state.all_runs_index:
+        st.session_state.all_runs_index = selected_index
+        st.rerun()
+
+    # get the active run name
+    active_run = st.session_state.all_runs[st.session_state.all_runs_index]
+
     clone_run, clear_runs = st.columns(2)
-    if clone_run.button("Clone", use_container_width=True):
+    if clone_run.button("clone", use_container_width=True):
         cloned_run = active_run + " (clone)"
         st.session_state.all_runs.append(cloned_run)
-        st.session_state.all_runs_index = len(st.session_state.all_runs)-1
+        st.session_state.all_runs_index = len(st.session_state.all_runs) - 1
         st.rerun()
-    if clear_runs.button("Clear", use_container_width=True):
-        all_runs.clear()
+    if clear_runs.button("clear", use_container_width=True):
+        st.session_state.all_runs.clear()
+        st.session_state.all_runs = ["default"]
+        st.session_state.all_runs_index = 0
+        st.rerun()
 
     st.divider()
 
-    run_name = st.text_input(
-        "Run name", value=st.session_state.all_runs[st.session_state.all_runs_index]
+    # text input for editing the current run name
+    new_name = st.text_input(
+        "Edit current run name", value=active_run, key="run_name_input"
     )
-    start_run, delete_run = st.columns(2)
 
-    if start_run.button("Run", use_container_width=True):
-        st.session_state.all_runs.append(run_name)
+    # update the name if it changed
+    if new_name != active_run and new_name.strip():
+        st.session_state.all_runs[st.session_state.all_runs_index] = new_name
         st.rerun()
-    if delete_run.button("Delete", use_container_width=True):
-        all_runs.remove(run_name)
 
     tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
 
@@ -85,21 +100,5 @@ with st.sidebar:
             )
 
 
-# Main window
-x = np.arange(0, 10, 0.01)
-y = np.sin(x)
-y2 = 2 * np.sin(3 * x)
-
-run1 = pd.DataFrame({"x": x, "y": y, "y2": y2})
-
-if "plots" not in st.session_state:
-    st.session_state.plots = []
-
-new_plot_clicked = st.button("New plot")
-if new_plot_clicked:
-    st.session_state.plots.append("Oioi")
-
-for plot in st.session_state.plots:
-    with st.container(border=True):
-        st.subheader(plot)
-        st.line_chart(run1, x="x", y=["y", "y2"])
+# Now active_run will reflect the current name
+st.write(f"Active run: {st.session_state.all_runs[st.session_state.all_runs_index]}")
