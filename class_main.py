@@ -4,19 +4,22 @@ import pandas as pd
 
 
 # State to save.
-all_runs = []
+if "all_runs" not in st.session_state:
+    st.session_state.all_runs = []
 
 
 # Sidebar
 with st.sidebar:
-    active_run_name = st.selectbox(
+    active_run = st.selectbox(
         "Name",
-        all_runs,
+        st.session_state.all_runs,
     )
 
     clone_run, clear_runs = st.columns(2)
     if clone_run.button("Clone", use_container_width=True):
-        pass
+        cloned_run = active_run + " (clone)"
+        st.session_state.all_runs.append(cloned_run)
+        st.rerun()
     if clear_runs.button("Clear", use_container_width=True):
         all_runs.clear()
 
@@ -26,7 +29,8 @@ with st.sidebar:
     start_run, delete_run = st.columns(2)
 
     if start_run.button("Run", use_container_width=True):
-        all_runs.append(run_name) 
+        st.session_state.all_runs.append(run_name)
+        st.rerun()
     if delete_run.button("Delete", use_container_width=True):
         all_runs.remove(run_name)
 
