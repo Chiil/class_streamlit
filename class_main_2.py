@@ -1,6 +1,11 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import tomllib
+
+
+with open(f"default_settings.toml", "rb") as f:
+    default_settings = tomllib.load(f)
 
 
 st.set_page_config(layout="wide")
@@ -95,27 +100,42 @@ elif st.session_state.main_mode == 1:
                 runtime = st.number_input(
                     r"runtime (s)",
                     help="total runtime (s)",
+                    value=default_settings["runtime"],
+                    step=1.0,
+                    format="%0.0f",
                 )
     
                 dt = st.number_input(
                     r"$\Delta t$ (s)",
                     help="time step (s)",
+                    value=default_settings["dt"],
+                    step=0.1,
+                    format="%0.1f",
                 )
     
             with st.expander("Mixed layer", expanded=True):
                 h = st.number_input(
                     r"$h$ (m)",
                     help="boundary-layer depth (m)",
+                    value=default_settings["h"],
+                    step=1.0,
+                    format="%0.0f",
                 )
     
                 beta = st.number_input(
                     r"$\beta$ (-)",
                     help="entrainment coefficient (-)",
+                    value=default_settings["beta"],
+                    step=0.01,
+                    format="%0.2f",
                 )
     
                 ws = st.number_input(
                     r"$w_s$ (-)",
                     help="large-scale vertical velocity (m s-1)",
+                    value=default_settings["ws"],
+                    step=0.001,
+                    format="%0.3f",
                 )
     
         with col2:
@@ -123,19 +143,31 @@ elif st.session_state.main_mode == 1:
                 theta = st.number_input(
                     r"$\theta$ (K)",
                     help="mixed-layer potential temperature (K)",
+                    value=default_settings["theta"],
+                    step=0.1,
+                    format="%0.1f",
                 )
     
                 dtheta = st.number_input(
                     r"$\Delta \theta$ (K)",
                     help="potential temperature jump (K)",
+                    value=default_settings["dtheta"],
+                    step=0.01,
+                    format="%0.2f",
                 )
     
                 wtheta = st.number_input(
                     r"$\overline{w^\prime \theta^\prime}_s$ (K m s-1)",
                     help="potential temperature surface flux (K m s-1)",
+                    value=default_settings["wtheta"],
+                    step=0.01,
+                    format="%0.2f",
                 )
     
                 gamma_theta = st.number_input(
                     r"$\gamma_\theta$ (K m-1)",
                     help="potential temperature lapse rate (K m-1)",
+                    value=default_settings["gammatheta"],
+                    step=0.0001,
+                    format="%0.4f",
                 )
