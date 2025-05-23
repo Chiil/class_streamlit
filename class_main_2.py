@@ -70,8 +70,10 @@ if st.session_state.main_mode == 0:
 elif st.session_state.main_mode == 1:
     st.header("Edit run")
 
+    col1, col2 = st.columns(2, vertical_alignment="bottom")
+
     # text input for editing the current run name
-    new_name = st.text_input(
+    new_name = col1.text_input(
         "Edit current run name", value=active_run, key="run_name_input"
     )
 
@@ -80,6 +82,9 @@ elif st.session_state.main_mode == 1:
         st.session_state.all_runs[st.session_state.all_runs_index] = new_name
         st.rerun()
     
+    if col2.button("Close"):
+        st.session_state.main_mode = 0
+        st.rerun()
     
     tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
     
@@ -134,7 +139,3 @@ elif st.session_state.main_mode == 1:
                     r"$\gamma_\theta$ (K m-1)",
                     help="potential temperature lapse rate (K m-1)",
                 )
-
-    if st.button("Close"):
-        st.session_state.main_mode = 0
-        st.rerun()
