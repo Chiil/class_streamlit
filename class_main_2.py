@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import tomllib
+import plotly.express as px
 
 
 with open(f"default_settings.toml", "rb") as f:
@@ -70,7 +71,71 @@ with st.sidebar:
 
 
 if st.session_state.main_mode == 0:
-    st.header("Plots")
+    st.header("Plots (Vega)")
+
+    col_plot1, col_plot2 = st.columns(2)
+
+    with col_plot1.container(border=True):
+        h = default_settings["h"]
+        theta = default_settings["theta"]
+        dtheta = default_settings["dtheta"]
+        gammatheta = default_settings["gammatheta"]
+
+        z_plot = np.array([ 0, h, h, 1000.0 ])
+        theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(1000.0-h) ])
+
+        df = pd.DataFrame({ "theta": theta_plot, "z": z_plot })
+
+        st.line_chart(df, x="theta", y="z")
+
+    with col_plot2.container(border=True):
+        runtime = default_settings["runtime"]
+        dt = default_settings["dt"]
+
+        wtheta = default_settings["wtheta"]
+        gammatheta = default_settings["gammatheta"]
+
+        time_plot = np.arange(0, runtime + dt/2, dt)
+        h_plot = (2*wtheta / gammatheta * time_plot)**.5
+
+        df = pd.DataFrame({ "time": time_plot / 3600, "h": h_plot, "h2": 1.3*h_plot })
+
+        st.line_chart(df, x="time", y=["h", "h2"])
+
+
+    st.header("Plots (Plotly)")
+
+    col_plot1, col_plot2 = st.columns(2)
+
+    with col_plot1.container(border=True):
+        h = default_settings["h"]
+        theta = default_settings["theta"]
+        dtheta = default_settings["dtheta"]
+        gammatheta = default_settings["gammatheta"]
+
+        z_plot = np.array([ 0, h, h, 1000.0 ])
+        theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(1000.0-h) ])
+
+        df = pd.DataFrame({ "theta": theta_plot, "z": z_plot })
+
+        fig = px.line(df, x="theta", y="z")
+        st.plotly_chart(fig)
+
+    with col_plot2.container(border=True):
+        runtime = default_settings["runtime"]
+        dt = default_settings["dt"]
+
+        wtheta = default_settings["wtheta"]
+        gammatheta = default_settings["gammatheta"]
+
+        time_plot = np.arange(0, runtime + dt/2, dt)
+        h_plot = (2*wtheta / gammatheta * time_plot)**.5
+
+        df = pd.DataFrame({ "time": time_plot / 3600, "h": h_plot, "h2": 1.3*h_plot })
+
+        fig = px.line(df, x="time", y=["h", "h2"])
+        st.plotly_chart(fig)
+
 
 elif st.session_state.main_mode == 1:
     st.header("Edit run")
