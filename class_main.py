@@ -140,9 +140,13 @@ if st.session_state.main_mode == 0:
         time_plot = np.arange(0, runtime + dt/2, dt)
         h_plot = (2*wtheta / gammatheta * time_plot)**.5
 
-        df = pd.DataFrame({ "time": time_plot / 3600, "h": h_plot, "h2": 1.3*h_plot })
+        df = pd.DataFrame({ "time": time_plot / 3600, "h": h_plot, "h2": 1.3*h_plot, "h3": 1.5*h_plot})
 
-        fig = px.line(df, x="time", y=["h", "h2"])
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=df["time"], y=df["h" ], mode="lines", name="run 1"))
+        fig.add_trace(go.Scatter(x=df["time"], y=df["h2"], mode="lines", name="run 2"))
+        fig.add_trace(go.Scatter(x=df["time"], y=df["h3"], mode="lines", name="run 3"))
+        fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="time (h)", yaxis_title="h (m)")
         st.plotly_chart(fig)
 
 
