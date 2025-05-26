@@ -43,23 +43,21 @@ with st.sidebar:
         active_run = st.session_state.all_runs[st.session_state.all_runs_index]
 
 
-    clone_run, clear_runs = st.columns(2)
-    if clone_run.button("Clone", use_container_width=True):
+    clone_run, clear_runs, edit_run, delete_run = st.columns(4)
+    if clone_run.button("", icon=":material/content_copy:", use_container_width=True):
         cloned_run = active_run + " (clone)"
         st.session_state.all_runs.append(cloned_run)
         st.session_state.all_runs_index = len(st.session_state.all_runs) - 1
         st.rerun()
-    if clear_runs.button("Clear", use_container_width=True):
+    if clear_runs.button("", icon=":material/explosion:", use_container_width=True):
         st.session_state.all_runs.clear()
         st.session_state.all_runs = ["Default"]
         st.session_state.all_runs_index = 0
         st.rerun()
-
-    edit_run, delete_run = st.columns(2)
-    if clone_run.button("Edit", use_container_width=True):
+    if edit_run.button("", icon=":material/edit:", use_container_width=True):
         st.session_state.main_mode = 1
         st.rerun()
-    if clear_runs.button("Delete", use_container_width=True):
+    if delete_run.button("", icon=":material/delete:", use_container_width=True):
         del(st.session_state.all_runs[st.session_state.all_runs_index])
         st.session_state.all_runs_index -= 1
 
@@ -72,37 +70,36 @@ with st.sidebar:
 
 
 if st.session_state.main_mode == 0:
-    st.header("Plots (Vega)")
+    # st.header("Plots (Vega)")
 
-    col_plot1, col_plot2 = st.columns(2)
+    # col_plot1, col_plot2 = st.columns(2)
 
-    with col_plot1.container(border=True):
-        h = default_settings["h"]
-        theta = default_settings["theta"]
-        dtheta = default_settings["dtheta"]
-        gammatheta = default_settings["gammatheta"]
+    # with col_plot1.container(border=True):
+    #     h = default_settings["h"]
+    #     theta = default_settings["theta"]
+    #     dtheta = default_settings["dtheta"]
+    #     gammatheta = default_settings["gammatheta"]
 
-        z_plot = np.array([ 0, h, h, 1000.0 ])
-        theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(1000.0-h) ])
+    #     z_plot = np.array([ 0, h, h, 1000.0 ])
+    #     theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(1000.0-h) ])
 
-        df = pd.DataFrame({ "theta": theta_plot, "z": z_plot })
+    #     df = pd.DataFrame({ "theta": theta_plot, "z": z_plot })
 
-        st.line_chart(df, x="theta", y="z")
+    #     st.line_chart(df, x="theta", y="z")
 
-    with col_plot2.container(border=True):
-        runtime = default_settings["runtime"]
-        dt = default_settings["dt"]
+    # with col_plot2.container(border=True):
+    #     runtime = default_settings["runtime"]
+    #     dt = default_settings["dt"]
 
-        wtheta = default_settings["wtheta"]
-        gammatheta = default_settings["gammatheta"]
+    #     wtheta = default_settings["wtheta"]
+    #     gammatheta = default_settings["gammatheta"]
 
-        time_plot = np.arange(0, runtime + dt/2, dt)
-        h_plot = (2*wtheta / gammatheta * time_plot)**.5
+    #     time_plot = np.arange(0, runtime + dt/2, dt)
+    #     h_plot = (2*wtheta / gammatheta * time_plot)**.5
 
-        df = pd.DataFrame({ "time": time_plot / 3600, "h": h_plot, "h2": 1.3*h_plot })
+    #     df = pd.DataFrame({ "time": time_plot / 3600, "h": h_plot, "h2": 1.3*h_plot })
 
-        st.line_chart(df, x="time", y=["h", "h2"])
-
+    #     st.line_chart(df, x="time", y=["h", "h2"])
 
     st.header("Plots (Plotly)")
 
@@ -120,13 +117,18 @@ if st.session_state.main_mode == 0:
         z_plot2 = np.array([ 0, h+100, h+100, 1000.0 ])
         theta_plot2 = np.array([ theta+1, theta+1, theta+1 + dtheta, theta+1 + dtheta + gammatheta*(1000.0-h-100) ])
 
+        z_plot3 = np.array([ 0, h+400, h+400, 1000.0 ])
+        theta_plot3 = np.array([ theta+1.5, theta+1.5, theta+1.5 + dtheta, theta+1.5 + dtheta + gammatheta*(1000.0-h-400) ])
+
         df = pd.DataFrame({ "theta": theta_plot, "z": z_plot})
         df2 = pd.DataFrame({ "theta": theta_plot2, "z": z_plot2})
+        df3 = pd.DataFrame({ "theta": theta_plot2, "z": z_plot2})
 
         # fig = px.line(df, x="theta", y="z")
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df ["theta"], y=df ["z"], mode="lines+markers", name="time = 0 h"))
-        fig.add_trace(go.Scatter(x=df2["theta"], y=df2["z"], mode="lines+markers", name="time = 1 h"))
+        fig.add_trace(go.Scatter(x=df ["theta"], y=df ["z"], mode="lines+markers", name="0 h"))
+        fig.add_trace(go.Scatter(x=df2["theta"], y=df2["z"], mode="lines+markers", name="1 h"))
+        fig.add_trace(go.Scatter(x=df3["theta"], y=df3["z"], mode="lines+markers", name="2 h"))
         fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="theta (K)", yaxis_title="z (m)")
         st.plotly_chart(fig)
 
