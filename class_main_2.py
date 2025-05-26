@@ -116,9 +116,12 @@ if st.session_state.main_mode == 0:
         z_plot = np.array([ 0, h, h, 1000.0 ])
         theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(1000.0-h) ])
 
-        df = pd.DataFrame({ "theta": theta_plot, "z": z_plot })
+        z_plot2 = np.array([ 0, h+100, h+100, 1000.0 ])
+        theta_plot2 = np.array([ theta+1, theta+1, theta+1 + dtheta, theta+1 + dtheta + gammatheta*(1000.0-h-100) ])
 
-        fig = px.line(df, x="theta", y="z")
+        df = pd.DataFrame({ "theta": theta_plot, "theta2": theta_plot2, "z": z_plot, "z2": z_plot2 })
+
+        fig = px.line(df, x=["theta", "theta2"], y=["z", "z2"])
         st.plotly_chart(fig)
 
     with col_plot2.container(border=True):
