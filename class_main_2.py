@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import tomllib
 import plotly.express as px
+import plotly.graph_objects as go
 
 
 with open(f"default_settings.toml", "rb") as f:
@@ -119,9 +120,14 @@ if st.session_state.main_mode == 0:
         z_plot2 = np.array([ 0, h+100, h+100, 1000.0 ])
         theta_plot2 = np.array([ theta+1, theta+1, theta+1 + dtheta, theta+1 + dtheta + gammatheta*(1000.0-h-100) ])
 
-        df = pd.DataFrame({ "theta": theta_plot, "theta2": theta_plot2, "z": z_plot, "z2": z_plot2 })
+        df = pd.DataFrame({ "theta": theta_plot, "z": z_plot})
+        df2 = pd.DataFrame({ "theta": theta_plot2, "z": z_plot2})
 
-        fig = px.line(df, x=["theta", "theta2"], y=["z", "z2"])
+        # fig = px.line(df, x="theta", y="z")
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=df ["theta"], y=df ["z"], mode="lines+markers", name="time = 0 h"))
+        fig.add_trace(go.Scatter(x=df2["theta"], y=df2["z"], mode="lines+markers", name="time = 1 h"))
+        fig.update_layout(margin={'t':0,'l':0,'b':0,'r':0})
         st.plotly_chart(fig)
 
     with col_plot2.container(border=True):
