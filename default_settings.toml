@@ -4,7 +4,7 @@ dt_output = 300.0
 
 h = 100.0
 beta = 0.2
-div = 1e-5
+div = 0.0
 
 theta = 300.0
 dtheta = 2.0
