@@ -6,6 +6,47 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
+class MixedLayerModel:
+    def __init__(self, settings):
+        self.runtime = settings["runtime"]
+        self.dt = settings["dt"]
+
+        self.h = settings["h"]
+        self.beta = settings["beta"]
+        self.ws = settings["ws"]
+
+        self.theta = settings["theta"]
+        self.dtheta = settings["dtheta"]
+        self.wtheta = settings["wtheta"]
+        self.gammatheta = settings["wtheta"]
+
+
+    def step(self):
+        # First, compute the growth.
+        # CvH, improve later, no moisture now
+        wthetav_s = self.wtheta
+        thetav = self.theta
+        dthetav = self.dtheta
+        we = - self.beta * wthetav / dthetav
+
+        # Compute the tendencies.
+        dhdt = we + self.ws
+        dthetadt = (self.wtheta + we * self.dtheta) / self.h
+        ddthetadt = dhdt * self.gammatheta - dthetadt
+
+        self.h += dt * dthetadt
+
+        self.theta += dt * dthetadt
+        self.dtheta += dt * ddthetadt
+
+    def run(self):
+        time = 0
+        nt = round(self.runtime / self.dt)
+
+        for i in range(nt):
+            step()
+
+
 with open(f"default_settings.toml", "rb") as f:
     default_settings = tomllib.load(f)
 
@@ -120,11 +161,10 @@ if st.session_state.main_mode == 0:
         z_plot3 = np.array([ 0, h+400, h+400, 1000.0 ])
         theta_plot3 = np.array([ theta+1.5, theta+1.5, theta+1.5 + dtheta, theta+1.5 + dtheta + gammatheta*(1000.0-h-400) ])
 
-        df = pd.DataFrame({ "theta": theta_plot, "z": z_plot})
-        df2 = pd.DataFrame({ "theta": theta_plot2, "z": z_plot2})
-        df3 = pd.DataFrame({ "theta": theta_plot2, "z": z_plot2})
+        df  = pd.DataFrame({"theta": theta_plot , "z": z_plot })
+        df2 = pd.DataFrame({"theta": theta_plot2, "z": z_plot2})
+        df3 = pd.DataFrame({"theta": theta_plot3, "z": z_plot3})
 
-        # fig = px.line(df, x="theta", y="z")
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=df ["theta"], y=df ["z"], mode="lines+markers", name="0 h"))
         fig.add_trace(go.Scatter(x=df2["theta"], y=df2["z"], mode="lines+markers", name="1 h"))
