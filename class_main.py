@@ -6,52 +6,91 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-class MixedLayerModel:
-    def __init__(self, settings):
-        self.runtime = settings["runtime"]
-        self.dt = settings["dt"]
-
-        self.h = settings["h"]
-        self.beta = settings["beta"]
-        self.ws = settings["ws"]
-
-        self.theta = settings["theta"]
-        self.dtheta = settings["dtheta"]
-        self.wtheta = settings["wtheta"]
-        self.gammatheta = settings["wtheta"]
-
-
-    def step(self):
-        # First, compute the growth.
-        # CvH, improve later, no moisture now
-        wthetav_s = self.wtheta
-        thetav = self.theta
-        dthetav = self.dtheta
-        we = - self.beta * wthetav / dthetav
-
-        # Compute the tendencies.
-        dhdt = we + self.ws
-        dthetadt = (self.wtheta + we * self.dtheta) / self.h
-        ddthetadt = dhdt * self.gammatheta - dthetadt
-
-        self.h += dt * dthetadt
-
-        self.theta += dt * dthetadt
-        self.dtheta += dt * ddthetadt
-
-    def run(self):
-        time = 0
-        nt = round(self.runtime / self.dt)
-
-        for i in range(nt):
-            step()
+st.set_page_config(layout="wide")
 
 
 with open(f"default_settings.toml", "rb") as f:
     default_settings = tomllib.load(f)
 
 
-st.set_page_config(layout="wide")
+class MixedLayerModel:
+    def __init__(self, settings):
+        self.runtime = settings["runtime"]
+        self.dt = settings["dt"]
+        self.dt_output = settings["dt_output"]
+
+        self.h = settings["h"]
+        self.beta = settings["beta"]
+        self.div = settings["div"]
+
+        self.theta = settings["theta"]
+        self.dtheta = settings["dtheta"]
+        self.wtheta = settings["wtheta"]
+        self.gammatheta = settings["gammatheta"]
+
+
+    def step(self):
+        # First, compute the growth.
+        # CvH, improve later, no moisture now
+        wthetav = self.wtheta
+        thetav = self.theta
+        dthetav = self.dtheta
+        we = self.beta * wthetav / dthetav
+        ws = - self.h * self.div
+
+        # Compute the tendencies.
+        dhdt = we + ws
+        dthetadt = (self.wtheta + we * self.dtheta) / self.h
+        ddthetadt = we * self.gammatheta - dthetadt
+
+        # Integrate the variables.
+        self.time += self.dt
+        self.h += self.dt * dhdt
+        self.theta += self.dt * dthetadt
+        self.dtheta += self.dt * ddthetadt
+
+
+    class Output:
+        pass
+
+
+    def run(self):
+        self.time = 0
+        nt = round(self.runtime / self.dt)
+        nt_output = round(nt * self.dt / self.dt_output)
+        nt_ratio = round(self.dt_output / self.dt)
+
+        # Output
+        output = self.Output()
+        output.time = np.nan * np.zeros(nt_output)
+        output.h = np.nan * np.zeros(nt_output)
+        output.theta = np.nan * np.zeros(nt_output)
+        output.dtheta = np.nan * np.zeros(nt_output)
+
+        output.time[0] = self.time
+        output.h[0] = self.h
+        output.theta[0] = self.theta
+        output.dtheta[0] = self.dtheta
+
+        for i in range(nt):
+            self.step()
+
+            if (i % nt_ratio) == 0:
+                ii = i // nt_ratio
+                output.time[ii] = self.time
+                output.h[ii] = self.h
+                output.theta[ii] = self.theta
+                output.dtheta[ii] = self.dtheta
+        
+        self.output = pd.DataFrame(data = {
+            "time": output.time,
+            "h": output.h,
+            "theta": output.theta,
+            "dtheta": output.dtheta}).set_index("time")
+
+
+default = MixedLayerModel(default_settings)
+default.run()
 
 
 # state to save
@@ -111,83 +150,29 @@ with st.sidebar:
 
 
 if st.session_state.main_mode == 0:
-    # st.header("Plots (Vega)")
-
-    # col_plot1, col_plot2 = st.columns(2)
-
-    # with col_plot1.container(border=True):
-    #     h = default_settings["h"]
-    #     theta = default_settings["theta"]
-    #     dtheta = default_settings["dtheta"]
-    #     gammatheta = default_settings["gammatheta"]
-
-    #     z_plot = np.array([ 0, h, h, 1000.0 ])
-    #     theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(1000.0-h) ])
-
-    #     df = pd.DataFrame({ "theta": theta_plot, "z": z_plot })
-
-    #     st.line_chart(df, x="theta", y="z")
-
-    # with col_plot2.container(border=True):
-    #     runtime = default_settings["runtime"]
-    #     dt = default_settings["dt"]
-
-    #     wtheta = default_settings["wtheta"]
-    #     gammatheta = default_settings["gammatheta"]
-
-    #     time_plot = np.arange(0, runtime + dt/2, dt)
-    #     h_plot = (2*wtheta / gammatheta * time_plot)**.5
-
-    #     df = pd.DataFrame({ "time": time_plot / 3600, "h": h_plot, "h2": 1.3*h_plot })
-
-    #     st.line_chart(df, x="time", y=["h", "h2"])
-
-    st.header("Plots (Plotly)")
-
     col_plot1, col_plot2 = st.columns(2)
 
     with col_plot1.container(border=True):
-        h = default_settings["h"]
-        theta = default_settings["theta"]
-        dtheta = default_settings["dtheta"]
-        gammatheta = default_settings["gammatheta"]
+        h = default.output["h"].values[-1]
+        theta = default.output["theta"].values[-1]
+        dtheta = default.output["dtheta"].values[-1]
+        gammatheta = default.gammatheta
 
-        z_plot = np.array([ 0, h, h, 1000.0 ])
-        theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(1000.0-h) ])
+        z_plot = np.array([ 0, h, h, 2000.0 ])
+        theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h) ])
 
-        z_plot2 = np.array([ 0, h+100, h+100, 1000.0 ])
-        theta_plot2 = np.array([ theta+1, theta+1, theta+1 + dtheta, theta+1 + dtheta + gammatheta*(1000.0-h-100) ])
-
-        z_plot3 = np.array([ 0, h+400, h+400, 1000.0 ])
-        theta_plot3 = np.array([ theta+1.5, theta+1.5, theta+1.5 + dtheta, theta+1.5 + dtheta + gammatheta*(1000.0-h-400) ])
-
-        df  = pd.DataFrame({"theta": theta_plot , "z": z_plot })
-        df2 = pd.DataFrame({"theta": theta_plot2, "z": z_plot2})
-        df3 = pd.DataFrame({"theta": theta_plot3, "z": z_plot3})
+        df = pd.DataFrame({"theta": theta_plot, "z": z_plot })
 
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df ["theta"], y=df ["z"], mode="lines+markers", name="0 h"))
-        fig.add_trace(go.Scatter(x=df2["theta"], y=df2["z"], mode="lines+markers", name="1 h"))
-        fig.add_trace(go.Scatter(x=df3["theta"], y=df3["z"], mode="lines+markers", name="2 h"))
+        fig.add_trace(go.Scatter(x=df["theta"], y=df["z"], mode="lines+markers", name="last"))
+
         fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="theta (K)", yaxis_title="z (m)")
         st.plotly_chart(fig)
 
+
     with col_plot2.container(border=True):
-        runtime = default_settings["runtime"]
-        dt = default_settings["dt"]
-
-        wtheta = default_settings["wtheta"]
-        gammatheta = default_settings["gammatheta"]
-
-        time_plot = np.arange(0, runtime + dt/2, dt)
-        h_plot = (2*wtheta / gammatheta * time_plot)**.5
-
-        df = pd.DataFrame({ "time": time_plot / 3600, "h": h_plot, "h2": 1.3*h_plot, "h3": 1.5*h_plot})
-
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df["time"], y=df["h" ], mode="lines", name="run 1"))
-        fig.add_trace(go.Scatter(x=df["time"], y=df["h2"], mode="lines", name="run 2"))
-        fig.add_trace(go.Scatter(x=df["time"], y=df["h3"], mode="lines", name="run 3"))
+        fig.add_trace(go.Scatter(x=default.output.index / 3600, y=default.output["h"], mode="lines+markers", name="run 1"))
         fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="time (h)", yaxis_title="h (m)")
         st.plotly_chart(fig)
 
@@ -233,6 +218,14 @@ elif st.session_state.main_mode == 1:
                     format="%0.1f",
                 )
     
+                dt_output = st.number_input(
+                    r"output $\Delta t$ (s)",
+                    help="output time step (s)",
+                    value=default_settings["dt_output"],
+                    step=0.1,
+                    format="%0.1f",
+                )
+    
             with st.expander("Mixed layer", expanded=True):
                 h = st.number_input(
                     r"$h$ (m)",
@@ -250,11 +243,11 @@ elif st.session_state.main_mode == 1:
                     format="%0.2f",
                 )
     
-                ws = st.number_input(
-                    r"$w_s$ (-)",
-                    help="large-scale vertical velocity (m s-1)",
-                    value=default_settings["ws"],
-                    step=0.001,
+                div = st.number_input(
+                    r"$\div$ (s-1)",
+                    help="large-scale divergence (s-1)",
+                    value=default_settings["div"],
+                    step=0.000001,
                     format="%0.3f",
                 )
     

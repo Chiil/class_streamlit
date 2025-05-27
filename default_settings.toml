@@ -1,9 +1,10 @@
 runtime = 10800.0
 dt = 10.0
+dt_output = 300.0
 
 h = 100.0
 beta = 0.2
-ws = 0.0
+div = 1e-5
 
 theta = 300.0
 dtheta = 2.0
