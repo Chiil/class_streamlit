@@ -14,7 +14,17 @@ with open(f"default_settings.toml", "rb") as f:
 
 
 class MixedLayerModel:
+    class Output:
+        pass
+
+
+    class Input:
+        pass
+
+
     def __init__(self, settings):
+        self.settings = settings
+
         self.runtime = settings["runtime"]
         self.dt = settings["dt"]
         self.dt_output = settings["dt_output"]
@@ -48,10 +58,6 @@ class MixedLayerModel:
         self.h += self.dt * dhdt
         self.theta += self.dt * dthetadt
         self.dtheta += self.dt * ddthetadt
-
-
-    class Output:
-        pass
 
 
     def run(self):
@@ -117,13 +123,9 @@ with st.sidebar:
         st.session_state.all_runs_key = selected_key
         st.rerun()
 
-    # get the active run name
-    if len(st.session_state.all_runs) > 0:
-        active_run = st.session_state.all_runs_key
-
     clone_run, edit_run, delete_run = st.columns(3)
     if clone_run.button("", icon=":material/content_copy:", use_container_width=True):
-        cloned_run = active_run + " (clone)"
+        cloned_run = st.session_state.all_runs_key + " (clone)"
         st.session_state.all_runs[cloned_run] = MixedLayerModel(default_settings)
         st.session_state.all_runs_key = cloned_run
         st.rerun()
@@ -177,12 +179,14 @@ elif st.session_state.main_mode == 1:
 
     # text input for editing the current run name
     new_name = col1.text_input(
-        "Edit current run name", value=active_run, key="run_name_input"
+        "Edit current run name", value=st.session_state.all_runs_key, key="run_name_input"
     )
 
     # update the name if it changed
-    if new_name != active_run and new_name.strip():
-        st.session_state.all_runs[st.session_state.all_runs_index] = new_name
+    new_name = new_name.strip()
+    if new_name != st.session_state.all_runs_key:
+        st.session_state.all_runs[new_name] = st.session_state.all_runs.pop(st.session_state.all_runs_key)
+        st.session_state.all_runs_key = new_name
         st.rerun()
     
     if col2.button("Close"):
