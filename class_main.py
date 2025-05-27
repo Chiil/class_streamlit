@@ -95,9 +95,9 @@ default.run()
 
 # state to save
 if "all_runs" not in st.session_state:
-    st.session_state.all_runs = ["Default"]
-if "all_runs_index" not in st.session_state:
-    st.session_state.all_runs_index = 0
+    st.session_state.all_runs = {"Default": MixedLayerModel(default_settings)}
+if "all_runs_key" not in st.session_state:
+    st.session_state.all_runs_key = "Default"
 if "main_mode" not in st.session_state:
     st.session_state.main_mode = 0
 
@@ -105,45 +105,38 @@ if "main_mode" not in st.session_state:
 # sidebar
 with st.sidebar:
     # handle selectbox selection first
-    selected_index = st.selectbox(
+    selected_key = st.selectbox(
         "Name",
-        range(len(st.session_state.all_runs)),
-        format_func=lambda x: st.session_state.all_runs[x],
-        index=st.session_state.all_runs_index,
+        st.session_state.all_runs.keys(),
         key="run_selector",
+        index=list(st.session_state.all_runs.keys()).index(st.session_state.all_runs_key)
     )
 
     # update index if changed
-    if selected_index != st.session_state.all_runs_index:
-        st.session_state.all_runs_index = selected_index
+    if selected_key != st.session_state.all_runs_key:
+        st.session_state.all_runs_key = selected_key
         st.rerun()
 
     # get the active run name
     if len(st.session_state.all_runs) > 0:
-        active_run = st.session_state.all_runs[st.session_state.all_runs_index]
+        active_run = st.session_state.all_runs_key
 
-
-    clone_run, clear_runs, edit_run, delete_run = st.columns(4)
+    clone_run, edit_run, delete_run = st.columns(3)
     if clone_run.button("", icon=":material/content_copy:", use_container_width=True):
         cloned_run = active_run + " (clone)"
-        st.session_state.all_runs.append(cloned_run)
-        st.session_state.all_runs_index = len(st.session_state.all_runs) - 1
-        st.rerun()
-    if clear_runs.button("", icon=":material/explosion:", use_container_width=True):
-        st.session_state.all_runs.clear()
-        st.session_state.all_runs = ["Default"]
-        st.session_state.all_runs_index = 0
+        st.session_state.all_runs[cloned_run] = MixedLayerModel(default_settings)
+        st.session_state.all_runs_key = cloned_run
         st.rerun()
     if edit_run.button("", icon=":material/edit:", use_container_width=True):
         st.session_state.main_mode = 1
         st.rerun()
     if delete_run.button("", icon=":material/delete:", use_container_width=True):
-        del(st.session_state.all_runs[st.session_state.all_runs_index])
-        st.session_state.all_runs_index -= 1
-
-        if st.session_state.all_runs_index < 0:
-            st.session_state.all_runs = ["Default"]
-            st.session_state.all_runs_index = 0
+        del(st.session_state.all_runs[st.session_state.all_runs_key])
+        if not st.session_state.all_runs:
+            st.session_state.all_runs = {"Default": MixedLayerModel(default_settings)}
+            st.session_state.all_runs_key = "Default"
+        else:
+            st.session_state.all_runs_key = list(st.session_state.all_runs.keys())[0]
         st.rerun()
 
     st.divider()
