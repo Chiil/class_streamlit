@@ -192,6 +192,8 @@ elif st.session_state.main_mode == 1:
     if col2.button("Close"):
         st.session_state.main_mode = 0
         st.rerun()
+
+    active_run = st.session_state.all_runs[st.session_state.all_runs_key]
     
     tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
     
@@ -202,7 +204,7 @@ elif st.session_state.main_mode == 1:
                 runtime = st.number_input(
                     r"runtime (s)",
                     help="total runtime (s)",
-                    value=default_settings["runtime"],
+                    value=active_run.settings["runtime"],
                     step=1.0,
                     format="%0.0f",
                 )
