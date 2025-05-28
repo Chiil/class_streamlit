@@ -99,10 +99,6 @@ class MixedLayerModel:
             "dtheta": output.dtheta}).set_index("time")
 
 
-default = MixedLayerModel(default_settings)
-default.run()
-
-
 # state to save
 if "all_runs" not in st.session_state:
     st.session_state.all_runs = {"Default": MixedLayerModel(default_settings)}
@@ -183,10 +179,30 @@ elif st.session_state.main_mode == 1:
     st.header("Edit run")
 
     active_run = st.session_state.all_runs[st.session_state.all_runs_key]
-    if "edit_settings" not in st.session_state:
-        st.session_state.edit_settings = copy.deepcopy(active_run.settings)
 
-    settings = st.session_state.edit_settings
+    if "settings_general_runtime" not in st.session_state:
+        st.session_state.settings_general_runtime = active_run.settings["runtime"]
+    if "settings_general_dt" not in st.session_state:
+        st.session_state.settings_general_dt = active_run.settings["dt"]
+    if "settings_general_dt_output" not in st.session_state:
+        st.session_state.settings_general_dt_output = active_run.settings["dt_output"]
+
+    if "settings_mixedlayer_h" not in st.session_state:
+        st.session_state.settings_mixedlayer_h = active_run.settings["h"]
+    if "settings_mixedlayer_beta" not in st.session_state:
+        st.session_state.settings_mixedlayer_beta = active_run.settings["beta"]
+    if "settings_mixedlayer_div" not in st.session_state:
+        st.session_state.settings_mixedlayer_div = active_run.settings["div"]
+
+    if "settings_temperature_theta" not in st.session_state:
+        st.session_state.settings_temperature_theta = active_run.settings["theta"]
+    if "settings_temperature_dtheta" not in st.session_state:
+        st.session_state.settings_temperature_dtheta = active_run.settings["dtheta"]
+    if "settings_temperature_wtheta" not in st.session_state:
+        st.session_state.settings_temperature_wtheta = active_run.settings["wtheta"]
+    if "settings_temperature_gammatheta" not in st.session_state:
+        st.session_state.settings_temperature_gammatheta = active_run.settings["gammatheta"]
+
 
     col1, col2, col3, col4, col5 = st.columns(5, vertical_alignment="bottom")
 
@@ -227,86 +243,87 @@ elif st.session_state.main_mode == 1:
         col1, col2 = st.columns(2)
         with col1:
             with st.expander("General", expanded=True):
-                settings["runtime"] = st.number_input(
+                st.number_input(
                     r"runtime (s)",
                     help="total runtime (s)",
-                    value=active_run.settings["runtime"],
                     step=1.0,
                     format="%0.0f",
+                    key="settings_general_runtime"
                 )
     
-                settings["dt"] = st.number_input(
+                st.number_input(
                     r"$\Delta t$ (s)",
                     help="time step (s)",
-                    value=active_run.settings["dt"],
                     step=0.1,
                     format="%0.1f",
+                    key="settings_general_dt"
                 )
     
-                settings["dt_output"] = st.number_input(
+                st.number_input(
                     r"output $\Delta t$ (s)",
                     help="output time step (s)",
-                    value=active_run.settings["dt_output"],
                     step=0.1,
                     format="%0.1f",
+                    key="settings_general_dt_output"
                 )
     
             with st.expander("Mixed layer", expanded=True):
-                settings["h"] = st.number_input(
+                st.number_input(
                     r"$h$ (m)",
                     help="boundary-layer depth (m)",
-                    value=active_run.settings["h"],
                     step=1.0,
                     format="%0.0f",
+                    key="settings_mixedlayer_h"
                 )
     
-                settings["beta"] = st.number_input(
+                st.number_input(
                     r"$\beta$ (-)",
                     help="entrainment coefficient (-)",
-                    value=active_run.settings["beta"],
                     step=0.01,
                     format="%0.2f",
+                    key="settings_mixedlayer_beta"
                 )
     
-                settings["div"] = st.number_input(
+                st.number_input(
                     r"$div$ (s-1)",
                     help="large-scale divergence (s-1)",
-                    value=active_run.settings["div"],
                     step=0.000001,
                     format="%0.3e",
+                    key="settings_mixedlayer_div"
                 )
     
         with col2:
             with st.expander("Temperature", expanded=True):
-                settings["theta"] = st.number_input(
+                st.number_input(
                     r"$\theta$ (K)",
                     help="mixed-layer potential temperature (K)",
-                    value=active_run.settings["theta"],
                     step=0.1,
                     format="%0.1f",
+                    key="settings_temperature_theta"
                 )
     
-                settings["dtheta"] = st.number_input(
+                st.number_input(
                     r"$\Delta \theta$ (K)",
                     help="potential temperature jump (K)",
-                    value=active_run.settings["dtheta"],
                     step=0.01,
                     format="%0.2f",
+                    key="settings_temperature_dtheta"
                 )
     
-                settings["wtheta"] = st.number_input(
+                st.number_input(
                     r"$\overline{w^\prime \theta^\prime}_s$ (K m s-1)",
                     help="potential temperature surface flux (K m s-1)",
-                    value=active_run.settings["wtheta"],
                     step=0.01,
                     format="%0.2f",
+                    key="settings_temperature_wtheta"
                 )
     
-                settings["gamma_theta"] = st.number_input(
+                st.number_input(
                     r"$\gamma_\theta$ (K m-1)",
                     help="potential temperature lapse rate (K m-1)",
-                    value=active_run.settings["gammatheta"],
                     step=0.0001,
                     format="%0.4f",
+                    key="settings_temperature_gammatheta"
                 )
 
+    st.write(st.session_state)
