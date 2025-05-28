@@ -169,28 +169,28 @@ with st.sidebar:
         pass
 
     for i, plot in enumerate(st.session_state.line_plots):
+        st.write(st.session_state)
         if f"_plot_{i}_runs" not in st.session_state:
             st.session_state[f"_plot_{i}_runs"] = [st.session_state.all_runs_key]
 
         with st.container(border=True):
-            st.header(f"Plot {i+1}")
+            st.header(f"Plot {i}")
             x_axis, y_axis = st.columns(2)
-            x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
-            y_axis.selectbox("Y-axis", plot.yaxis_options, index=plot.yaxis_index, key=f"plot_{i}_yaxis")
+            plot.xaxis_key = x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
+            plot.yaxis_key = y_axis.selectbox("Y-axis", plot.yaxis_options, index=plot.yaxis_index, key=f"plot_{i}_yaxis")
 
-            st.session_state[f"plot_{i}_runs"] = st.session_state[f"_plot_{i}_runs"]
+            # st.session_state[f"plot_{i}_runs"] = st.session_state[f"_plot_{i}_runs"]
 
-            st.multiselect(
+            plot.selected_runs = st.multiselect(
                 "Runs to plot",
                 options=list(st.session_state.all_runs.keys()),
                 key=f"plot_{i}_runs",
             )
 
-        plot.xaxis_key = st.session_state[f"plot_{i}_xaxis"]
-        plot.yaxis_key = st.session_state[f"plot_{i}_yaxis"]
-        plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
-        plot.yaxis_index = plot.yaxis_options.index(plot.yaxis_key)
-        plot.selected_runs = st.session_state[f"_plot_{i}_runs"]
+            # Store to be saved, the underscore is a workaround for streamlit cleaning up the keys.
+            plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
+            plot.yaxis_index = plot.yaxis_options.index(plot.yaxis_key)
+            st.session_state[f"_plot_{i}_runs"] = st.session_state[f"plot_{i}_runs"]
 
     # with st.container(border=True):
     #     st.header("Plot 2")
@@ -206,11 +206,12 @@ with st.sidebar:
 if st.session_state.main_mode == 0:
     for i, plot in enumerate(st.session_state.line_plots):
         with st.container(border=True):
-            st.subheader(f"Plot {i+1}")
+            st.subheader(f"Plot {i}")
             fig = go.Figure()
             for run_name in plot.selected_runs:
                 run = st.session_state.all_runs[run_name]
                 fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name))
+            fig.update_traces(showlegend=True) 
             fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title=plot.yaxis_key)
             st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
