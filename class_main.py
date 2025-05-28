@@ -164,7 +164,7 @@ with st.sidebar:
 
     with st.container(border=True):
         st.header("Plot 2")
-        x_axis, time_axis = st.columns([1, 2])
+        x_axis, time_axis = st.columns([2, 3])
         x_axis.selectbox("X-axis", ["theta"])
         output_time = st.session_state.all_runs[st.session_state.all_runs_key].output.index / 3600
         output_step = st.session_state.all_runs[st.session_state.all_runs_key].dt_output / 3600
