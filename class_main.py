@@ -220,17 +220,39 @@ elif st.session_state.main_mode == 1:
     
     if col2.button("Save"):
         del(st.session_state.all_runs[st.session_state.all_runs_key])
-        st.session_state.all_runs[st.session_state.all_runs_key] = MixedLayerModel(st.session_state.edit_settings)
+        settings = {}
+        settings["runtime"] = st.session_state.settings_general_runtime
+        settings["dt"] = st.session_state.settings_general_dt
+        settings["dt_output"] = st.session_state.settings_general_dt_output
+        settings["h"] = st.session_state.settings_mixedlayer_h
+        settings["beta"] = st.session_state.settings_mixedlayer_beta
+        settings["div"] = st.session_state.settings_mixedlayer_div
+        settings["theta"] = st.session_state.settings_temperature_theta
+        settings["dtheta"] = st.session_state.settings_temperature_dtheta
+        settings["wtheta"] = st.session_state.settings_temperature_wtheta
+        settings["gammatheta"] = st.session_state.settings_temperature_gammatheta
+        st.session_state.all_runs[st.session_state.all_runs_key] = MixedLayerModel(settings)
         st.rerun()
 
     if col3.button("Save & close"):
         del(st.session_state.all_runs[st.session_state.all_runs_key])
-        st.session_state.all_runs[st.session_state.all_runs_key] = MixedLayerModel(st.session_state.edit_settings)
+        settings = {}
+        settings["runtime"] = st.session_state.settings_general_runtime
+        settings["dt"] = st.session_state.settings_general_dt
+        settings["dt_output"] = st.session_state.settings_general_dt_output
+        settings["h"] = st.session_state.settings_mixedlayer_h
+        settings["beta"] = st.session_state.settings_mixedlayer_beta
+        settings["div"] = st.session_state.settings_mixedlayer_div
+        settings["theta"] = st.session_state.settings_temperature_theta
+        settings["dtheta"] = st.session_state.settings_temperature_dtheta
+        settings["wtheta"] = st.session_state.settings_temperature_wtheta
+        settings["gammatheta"] = st.session_state.settings_temperature_gammatheta
+        st.session_state.all_runs[st.session_state.all_runs_key] = MixedLayerModel(settings)
         st.session_state.main_mode = 0
         st.rerun()
 
     if col4.button("Reset"):
-        active_run = st.session_state.all_runs[st.session_state.all_runs_key]
+        # active_run = st.session_state.all_runs[st.session_state.all_runs_key]
         st.rerun()
 
     if col5.button("Close"):
@@ -254,7 +276,7 @@ elif st.session_state.main_mode == 1:
                 st.number_input(
                     r"$\Delta t$ (s)",
                     help="time step (s)",
-                    step=0.1,
+                    step=1.0,
                     format="%0.1f",
                     key="settings_general_dt"
                 )
@@ -262,7 +284,7 @@ elif st.session_state.main_mode == 1:
                 st.number_input(
                     r"output $\Delta t$ (s)",
                     help="output time step (s)",
-                    step=0.1,
+                    step=1.0,
                     format="%0.1f",
                     key="settings_general_dt_output"
                 )
@@ -297,7 +319,7 @@ elif st.session_state.main_mode == 1:
                 st.number_input(
                     r"$\theta$ (K)",
                     help="mixed-layer potential temperature (K)",
-                    step=0.1,
+                    step=0.5,
                     format="%0.1f",
                     key="settings_temperature_theta"
                 )
@@ -305,7 +327,7 @@ elif st.session_state.main_mode == 1:
                 st.number_input(
                     r"$\Delta \theta$ (K)",
                     help="potential temperature jump (K)",
-                    step=0.01,
+                    step=0.5,
                     format="%0.2f",
                     key="settings_temperature_dtheta"
                 )
@@ -321,9 +343,8 @@ elif st.session_state.main_mode == 1:
                 st.number_input(
                     r"$\gamma_\theta$ (K m-1)",
                     help="potential temperature lapse rate (K m-1)",
-                    step=0.0001,
+                    step=0.0005,
                     format="%0.4f",
                     key="settings_temperature_gammatheta"
                 )
 
-    st.write(st.session_state)
