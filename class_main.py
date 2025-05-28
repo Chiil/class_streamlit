@@ -67,7 +67,7 @@ class MixedLayerModel:
         self.time = 0
 
         nt = round(self.runtime / self.dt)
-        nt_output = round(nt * self.dt / self.dt_output)
+        nt_output = round(nt * self.dt / self.dt_output) + 1
         nt_ratio = round(self.dt_output / self.dt)
 
         # Output
@@ -82,7 +82,7 @@ class MixedLayerModel:
         output.theta[0] = self.theta
         output.dtheta[0] = self.dtheta
 
-        for i in range(nt):
+        for i in range(1, nt+1):
             self.step()
 
             if (i % nt_ratio) == 0:
@@ -110,6 +110,9 @@ if "main_mode" not in st.session_state:
 
 # sidebar
 with st.sidebar:
+    st.title("CLASS web")
+    st.header("Experiments")
+
     # handle selectbox selection first
     selected_key = st.selectbox(
         "Name",
@@ -143,11 +146,46 @@ with st.sidebar:
 
     st.divider()
 
+    st.header("Plots")
+    new_timeseries, new_profile, new_skewt = st.columns(3)
+    if new_timeseries.button("", help="New timeseries plot", icon=":material/line_axis:", use_container_width=True):
+        pass
+    if new_profile.button("", help="New profile plot", icon=":material/vertical_align_top:", use_container_width=True):
+        pass
+    if new_skewt.button("", help="New Skew-T plot", icon=":material/partly_cloudy_day:", use_container_width=True):
+        pass
+
+    with st.container(border=True):
+        st.header("Plot 1")
+        x_axis, y_axis = st.columns(2)
+        x_axis.selectbox("X-axis", ["time", "time UTC"], index=0)
+        y_axis.selectbox("Y-axis", ["h", "theta", "dtheta"], index=0)
+        st.multiselect("Runs to plot", options=list(st.session_state.all_runs.keys()))
+
+    with st.container(border=True):
+        st.header("Plot 2")
+        x_axis, time_axis = st.columns([1, 2])
+        x_axis.selectbox("X-axis", ["theta"])
+        output_time = st.session_state.all_runs[st.session_state.all_runs_key].output.index / 3600
+        output_step = st.session_state.all_runs[st.session_state.all_runs_key].dt_output / 3600
+        time_axis.slider("Time", output_time.min(), output_time.max(), output_time.min(), output_step)
+
+
+
 
 if st.session_state.main_mode == 0:
     col_plot1, col_plot2 = st.columns(2)
 
     with col_plot1.container(border=True):
+        st.subheader("Plot 1")
+        fig = go.Figure()
+        for name, run in st.session_state.all_runs.items():
+            fig.add_trace(go.Scatter(x=run.output.index / 3600, y=run.output["h"], mode="lines+markers", name=name))
+        fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="time (h)", yaxis_title="h (m)")
+        st.plotly_chart(fig)
+
+    with col_plot2.container(border=True):
+        st.subheader("Plot 2")
         fig = go.Figure()
 
         for name, run in st.session_state.all_runs.items():
@@ -167,12 +205,6 @@ if st.session_state.main_mode == 0:
         st.plotly_chart(fig)
 
 
-    with col_plot2.container(border=True):
-        fig = go.Figure()
-        for name, run in st.session_state.all_runs.items():
-            fig.add_trace(go.Scatter(x=run.output.index / 3600, y=run.output["h"], mode="lines+markers", name=name))
-        fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="time (h)", yaxis_title="h (m)")
-        st.plotly_chart(fig)
 
 
 elif st.session_state.main_mode == 1:
@@ -252,7 +284,6 @@ elif st.session_state.main_mode == 1:
         st.rerun()
 
     if col4.button("Reset"):
-        # active_run = st.session_state.all_runs[st.session_state.all_runs_key]
         st.rerun()
 
     if col5.button("Close"):
