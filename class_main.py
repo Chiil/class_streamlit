@@ -87,7 +87,7 @@ class MixedLayerModel:
 
             if (i % nt_ratio) == 0:
                 ii = i // nt_ratio
-                output.time[ii] = self.time
+                output.time[ii] = self.time / 3600 # convert to hours.
                 output.h[ii] = self.h
                 output.theta[ii] = self.theta
                 output.dtheta[ii] = self.dtheta
@@ -96,7 +96,18 @@ class MixedLayerModel:
             "time": output.time,
             "h": output.h,
             "theta": output.theta,
-            "dtheta": output.dtheta}).set_index("time")
+            "dtheta": output.dtheta}) #.set_index("time") do not set index, so time can be queried
+
+
+class LinePlot:
+    def __init__(self):
+        self.xaxis_options = ["time", "time UTC"]
+        self.yaxis_options = ["h", "theta", "dtheta"]
+        self.xaxis_index = 0
+        self.yaxis_index = 0
+        self.xaxis_key = self.xaxis_options[0]
+        self.yaxis_key = self.yaxis_options[0]
+        self.selected_runs = []
 
 
 # state to save
@@ -106,6 +117,8 @@ if "all_runs_key" not in st.session_state:
     st.session_state.all_runs_key = "Default"
 if "main_mode" not in st.session_state:
     st.session_state.main_mode = 0
+if "line_plots" not in st.session_state:
+    st.session_state.line_plots = []
 
 
 # sidebar
@@ -147,62 +160,90 @@ with st.sidebar:
     st.divider()
 
     st.header("Plots")
-    new_timeseries, new_profile, new_skewt = st.columns(3)
-    if new_timeseries.button("", help="New timeseries plot", icon=":material/line_axis:", use_container_width=True):
-        pass
+    new_line_plot, new_profile, new_skewt = st.columns(3)
+    if new_line_plot.button("", help="New timeseries plot", icon=":material/line_axis:", use_container_width=True):
+        st.session_state.line_plots.append(LinePlot())
     if new_profile.button("", help="New profile plot", icon=":material/vertical_align_top:", use_container_width=True):
         pass
     if new_skewt.button("", help="New Skew-T plot", icon=":material/partly_cloudy_day:", use_container_width=True):
         pass
 
-    with st.container(border=True):
-        st.header("Plot 1")
-        x_axis, y_axis = st.columns(2)
-        x_axis.selectbox("X-axis", ["time", "time UTC"], index=0)
-        y_axis.selectbox("Y-axis", ["h", "theta", "dtheta"], index=0)
-        st.multiselect("Runs to plot", options=list(st.session_state.all_runs.keys()))
+    for i, plot in enumerate(st.session_state.line_plots):
+        if f"_plot_{i}_runs" not in st.session_state:
+            st.session_state[f"_plot_{i}_runs"] = [st.session_state.all_runs_key]
 
-    with st.container(border=True):
-        st.header("Plot 2")
-        x_axis, time_axis = st.columns([2, 3])
-        x_axis.selectbox("X-axis", ["theta"])
-        output_time = st.session_state.all_runs[st.session_state.all_runs_key].output.index / 3600
-        output_step = st.session_state.all_runs[st.session_state.all_runs_key].dt_output / 3600
-        time_axis.slider("Time", output_time.min(), output_time.max(), output_time.min(), output_step)
+        with st.container(border=True):
+            st.header(f"Plot {i+1}")
+            x_axis, y_axis = st.columns(2)
+            x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
+            y_axis.selectbox("Y-axis", plot.yaxis_options, index=plot.yaxis_index, key=f"plot_{i}_yaxis")
+
+            st.session_state[f"plot_{i}_runs"] = st.session_state[f"_plot_{i}_runs"]
+
+            st.multiselect(
+                "Runs to plot",
+                options=list(st.session_state.all_runs.keys()),
+                key=f"plot_{i}_runs",
+            )
+
+        plot.xaxis_key = st.session_state[f"plot_{i}_xaxis"]
+        plot.yaxis_key = st.session_state[f"plot_{i}_yaxis"]
+        plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
+        plot.yaxis_index = plot.yaxis_options.index(plot.yaxis_key)
+        plot.selected_runs = st.session_state[f"_plot_{i}_runs"]
+
+    # with st.container(border=True):
+    #     st.header("Plot 2")
+    #     x_axis, time_axis = st.columns([2, 3])
+    #     x_axis.selectbox("X-axis", ["theta"])
+    #     output_time = st.session_state.all_runs[st.session_state.all_runs_key].output.index / 3600
+    #     output_step = st.session_state.all_runs[st.session_state.all_runs_key].dt_output / 3600
+    #     time_axis.slider("Time", output_time.min(), output_time.max(), output_time.min(), output_step)
 
 
 
 
 if st.session_state.main_mode == 0:
-    col_plot1, col_plot2 = st.columns(2)
+    for i, plot in enumerate(st.session_state.line_plots):
+        with st.container(border=True):
+            st.subheader(f"Plot {i+1}")
+            fig = go.Figure()
+            for run_name in plot.selected_runs:
+                run = st.session_state.all_runs[run_name]
+                fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name))
+            fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title=plot.yaxis_key)
+            st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
-    with col_plot1.container(border=True):
-        st.subheader("Plot 1")
-        fig = go.Figure()
-        for name, run in st.session_state.all_runs.items():
-            fig.add_trace(go.Scatter(x=run.output.index / 3600, y=run.output["h"], mode="lines+markers", name=name))
-        fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="time (h)", yaxis_title="h (m)")
-        st.plotly_chart(fig)
 
-    with col_plot2.container(border=True):
-        st.subheader("Plot 2")
-        fig = go.Figure()
+    # col_plot1, col_plot2 = st.columns(2)
 
-        for name, run in st.session_state.all_runs.items():
-            h = run.output["h"].values[-1]
-            theta = run.output["theta"].values[-1]
-            dtheta = run.output["dtheta"].values[-1]
-            gammatheta = run.gammatheta
+    # with col_plot1.container(border=True):
+    #     st.subheader("Plot 1")
+    #     fig = go.Figure()
+    #     for name, run in st.session_state.all_runs.items():
+    #         fig.add_trace(go.Scatter(x=run.output.index / 3600, y=run.output["h"], mode="lines+markers", name=name))
+    #     fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="time (h)", yaxis_title="h (m)")
+    #     st.plotly_chart(fig)
 
-            z_plot = np.array([ 0, h, h, 2000.0 ])
-            theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h) ])
+    # with col_plot2.container(border=True):
+    #     st.subheader("Plot 2")
+    #     fig = go.Figure()
 
-            df = pd.DataFrame({"theta": theta_plot, "z": z_plot })
+    #     for name, run in st.session_state.all_runs.items():
+    #         h = run.output["h"].values[-1]
+    #         theta = run.output["theta"].values[-1]
+    #         dtheta = run.output["dtheta"].values[-1]
+    #         gammatheta = run.gammatheta
 
-            fig.add_trace(go.Scatter(x=df["theta"], y=df["z"], mode="lines+markers", name=name))
+    #         z_plot = np.array([ 0, h, h, 2000.0 ])
+    #         theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h) ])
 
-        fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="theta (K)", yaxis_title="z (m)")
-        st.plotly_chart(fig)
+    #         df = pd.DataFrame({"theta": theta_plot, "z": z_plot })
+
+    #         fig.add_trace(go.Scatter(x=df["theta"], y=df["z"], mode="lines+markers", name=name))
+
+    #     fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="theta (K)", yaxis_title="z (m)")
+    #     st.plotly_chart(fig)
 
 
 
@@ -378,4 +419,3 @@ elif st.session_state.main_mode == 1:
                     format="%0.4f",
                     key="settings_temperature_gammatheta"
                 )
-

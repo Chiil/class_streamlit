@@ -1,5 +1,5 @@
 [theme]
-baseFontSize = 14
+baseFontSize = 13
 
 [server]
 runOnSave = true
