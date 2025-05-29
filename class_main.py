@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit import session_state as ss
 import copy
 import numpy as np
 import pandas as pd
@@ -111,14 +112,14 @@ class LinePlot:
 
 
 # state to save
-if "all_runs" not in st.session_state:
-    st.session_state.all_runs = {"Default": MixedLayerModel(default_settings)}
-if "all_runs_key" not in st.session_state:
-    st.session_state.all_runs_key = "Default"
-if "main_mode" not in st.session_state:
-    st.session_state.main_mode = 0
-if "line_plots" not in st.session_state:
-    st.session_state.line_plots = []
+if "all_runs" not in ss:
+    ss.all_runs = {"Default": MixedLayerModel(default_settings)}
+if "all_runs_key" not in ss:
+    ss.all_runs_key = "Default"
+if "main_mode" not in ss:
+    ss.main_mode = 0
+if "line_plots" not in ss:
+    ss.line_plots = []
 
 
 # sidebar
@@ -129,32 +130,32 @@ with st.sidebar:
     # handle selectbox selection first
     selected_key = st.selectbox(
         "Name",
-        st.session_state.all_runs.keys(),
+        ss.all_runs.keys(),
         key="run_selector",
-        index=list(st.session_state.all_runs.keys()).index(st.session_state.all_runs_key)
+        index=list(ss.all_runs.keys()).index(ss.all_runs_key)
     )
 
     # update index if changed
-    if selected_key != st.session_state.all_runs_key:
-        st.session_state.all_runs_key = selected_key
+    if selected_key != ss.all_runs_key:
+        ss.all_runs_key = selected_key
         st.rerun()
 
     clone_run, edit_run, delete_run = st.columns(3)
     if clone_run.button("", icon=":material/content_copy:", use_container_width=True):
-        cloned_run = st.session_state.all_runs_key + " (clone)"
-        st.session_state.all_runs[cloned_run] = MixedLayerModel(st.session_state.all_runs[st.session_state.all_runs_key].settings)
-        st.session_state.all_runs_key = cloned_run
+        cloned_run = ss.all_runs_key + " (clone)"
+        ss.all_runs[cloned_run] = MixedLayerModel(ss.all_runs[ss.all_runs_key].settings)
+        ss.all_runs_key = cloned_run
         st.rerun()
     if edit_run.button("", icon=":material/edit:", use_container_width=True):
-        st.session_state.main_mode = 1
+        ss.main_mode = 1
         st.rerun()
     if delete_run.button("", icon=":material/delete:", use_container_width=True):
-        del(st.session_state.all_runs[st.session_state.all_runs_key])
-        if not st.session_state.all_runs:
-            st.session_state.all_runs = {"Default": MixedLayerModel(default_settings)}
-            st.session_state.all_runs_key = "Default"
+        del(ss.all_runs[ss.all_runs_key])
+        if not ss.all_runs:
+            ss.all_runs = {"Default": MixedLayerModel(default_settings)}
+            ss.all_runs_key = "Default"
         else:
-            st.session_state.all_runs_key = list(st.session_state.all_runs.keys())[0]
+            ss.all_runs_key = list(ss.all_runs.keys())[0]
         st.rerun()
 
     st.divider()
@@ -162,25 +163,25 @@ with st.sidebar:
     st.header("Plots")
     new_line_plot, new_profile, new_skewt = st.columns(3)
     if new_line_plot.button("", help="New timeseries plot", icon=":material/line_axis:", use_container_width=True):
-        st.session_state.line_plots.append(LinePlot())
+        ss.line_plots.append(LinePlot())
     if new_profile.button("", help="New profile plot", icon=":material/vertical_align_top:", use_container_width=True):
         pass
     if new_skewt.button("", help="New Skew-T plot", icon=":material/partly_cloudy_day:", use_container_width=True):
         pass
 
-    for i, plot in enumerate(st.session_state.line_plots):
-        if f"_plot_{i}_runs" not in st.session_state:
-            st.session_state[f"_plot_{i}_runs"] = list(st.session_state.all_runs.keys())
-        if f"plot_{i}_runs" not in st.session_state:
-            st.session_state[f"plot_{i}_runs"] = st.session_state[f"_plot_{i}_runs"]
+    for i, plot in enumerate(ss.line_plots):
+        if f"_plot_{i}_runs" not in ss:
+            ss[f"_plot_{i}_runs"] = list(ss.all_runs.keys())
+        if f"plot_{i}_runs" not in ss:
+            ss[f"plot_{i}_runs"] = ss[f"_plot_{i}_runs"]
 
         # Update plot state BEFORE rendering selectboxes
-        if f"plot_{i}_xaxis" in st.session_state:
-            plot.xaxis_key = st.session_state[f"plot_{i}_xaxis"]
+        if f"plot_{i}_xaxis" in ss:
+            plot.xaxis_key = ss[f"plot_{i}_xaxis"]
             plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
         
-        if f"plot_{i}_yaxis" in st.session_state:
-            plot.yaxis_key = st.session_state[f"plot_{i}_yaxis"]
+        if f"plot_{i}_yaxis" in ss:
+            plot.yaxis_key = ss[f"plot_{i}_yaxis"]
             plot.yaxis_index = plot.yaxis_options.index(plot.yaxis_key)
 
         with st.container(border=True):
@@ -191,20 +192,20 @@ with st.sidebar:
 
             plot.selected_runs = st.multiselect(
                 "Runs to plot",
-                options=list(st.session_state.all_runs.keys()),
+                options=list(ss.all_runs.keys()),
                 key=f"plot_{i}_runs",
             )
 
-            st.session_state[f"_plot_{i}_runs"] = st.session_state[f"plot_{i}_runs"]
+            ss[f"_plot_{i}_runs"] = ss[f"plot_{i}_runs"]
 
 
-if st.session_state.main_mode == 0:
-    for i, plot in enumerate(st.session_state.line_plots):
+if ss.main_mode == 0:
+    for i, plot in enumerate(ss.line_plots):
         with st.container(border=True):
             st.subheader(f"Plot {i}")
             fig = go.Figure()
             for run_name in plot.selected_runs:
-                run = st.session_state.all_runs[run_name]
+                run = ss.all_runs[run_name]
                 fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name))
             fig.update_traces(showlegend=True) 
             fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title=plot.yaxis_key)
@@ -216,7 +217,7 @@ if st.session_state.main_mode == 0:
     # with col_plot1.container(border=True):
     #     st.subheader("Plot 1")
     #     fig = go.Figure()
-    #     for name, run in st.session_state.all_runs.items():
+    #     for name, run in ss.all_runs.items():
     #         fig.add_trace(go.Scatter(x=run.output.index / 3600, y=run.output["h"], mode="lines+markers", name=name))
     #     fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="time (h)", yaxis_title="h (m)")
     #     st.plotly_chart(fig)
@@ -225,7 +226,7 @@ if st.session_state.main_mode == 0:
     #     st.subheader("Plot 2")
     #     fig = go.Figure()
 
-    #     for name, run in st.session_state.all_runs.items():
+    #     for name, run in ss.all_runs.items():
     #         h = run.output["h"].values[-1]
     #         theta = run.output["theta"].values[-1]
     #         dtheta = run.output["dtheta"].values[-1]
@@ -244,87 +245,87 @@ if st.session_state.main_mode == 0:
 
 
 
-elif st.session_state.main_mode == 1:
+elif ss.main_mode == 1:
     st.header("Edit run")
 
-    active_run = st.session_state.all_runs[st.session_state.all_runs_key]
+    active_run = ss.all_runs[ss.all_runs_key]
 
-    if "settings_general_runtime" not in st.session_state:
-        st.session_state.settings_general_runtime = active_run.settings["runtime"]
-    if "settings_general_dt" not in st.session_state:
-        st.session_state.settings_general_dt = active_run.settings["dt"]
-    if "settings_general_dt_output" not in st.session_state:
-        st.session_state.settings_general_dt_output = active_run.settings["dt_output"]
+    if "settings_general_runtime" not in ss:
+        ss.settings_general_runtime = active_run.settings["runtime"]
+    if "settings_general_dt" not in ss:
+        ss.settings_general_dt = active_run.settings["dt"]
+    if "settings_general_dt_output" not in ss:
+        ss.settings_general_dt_output = active_run.settings["dt_output"]
 
-    if "settings_mixedlayer_h" not in st.session_state:
-        st.session_state.settings_mixedlayer_h = active_run.settings["h"]
-    if "settings_mixedlayer_beta" not in st.session_state:
-        st.session_state.settings_mixedlayer_beta = active_run.settings["beta"]
-    if "settings_mixedlayer_div" not in st.session_state:
-        st.session_state.settings_mixedlayer_div = active_run.settings["div"]
+    if "settings_mixedlayer_h" not in ss:
+        ss.settings_mixedlayer_h = active_run.settings["h"]
+    if "settings_mixedlayer_beta" not in ss:
+        ss.settings_mixedlayer_beta = active_run.settings["beta"]
+    if "settings_mixedlayer_div" not in ss:
+        ss.settings_mixedlayer_div = active_run.settings["div"]
 
-    if "settings_temperature_theta" not in st.session_state:
-        st.session_state.settings_temperature_theta = active_run.settings["theta"]
-    if "settings_temperature_dtheta" not in st.session_state:
-        st.session_state.settings_temperature_dtheta = active_run.settings["dtheta"]
-    if "settings_temperature_wtheta" not in st.session_state:
-        st.session_state.settings_temperature_wtheta = active_run.settings["wtheta"]
-    if "settings_temperature_gammatheta" not in st.session_state:
-        st.session_state.settings_temperature_gammatheta = active_run.settings["gammatheta"]
+    if "settings_temperature_theta" not in ss:
+        ss.settings_temperature_theta = active_run.settings["theta"]
+    if "settings_temperature_dtheta" not in ss:
+        ss.settings_temperature_dtheta = active_run.settings["dtheta"]
+    if "settings_temperature_wtheta" not in ss:
+        ss.settings_temperature_wtheta = active_run.settings["wtheta"]
+    if "settings_temperature_gammatheta" not in ss:
+        ss.settings_temperature_gammatheta = active_run.settings["gammatheta"]
 
 
     col1, col2, col3, col4, col5 = st.columns(5, vertical_alignment="bottom")
 
     # text input for editing the current run name
     new_name = col1.text_input(
-        "Edit current run name", value=st.session_state.all_runs_key, key="run_name_input"
+        "Edit current run name", value=ss.all_runs_key, key="run_name_input"
     )
 
     # update the name if it changed
     new_name = new_name.strip()
-    if new_name != st.session_state.all_runs_key:
-        st.session_state.all_runs[new_name] = st.session_state.all_runs.pop(st.session_state.all_runs_key)
-        st.session_state.all_runs_key = new_name
+    if new_name != ss.all_runs_key:
+        ss.all_runs[new_name] = ss.all_runs.pop(ss.all_runs_key)
+        ss.all_runs_key = new_name
         st.rerun()
     
     if col2.button("Save"):
-        del(st.session_state.all_runs[st.session_state.all_runs_key])
+        del(ss.all_runs[ss.all_runs_key])
         settings = {}
-        settings["runtime"] = st.session_state.settings_general_runtime
-        settings["dt"] = st.session_state.settings_general_dt
-        settings["dt_output"] = st.session_state.settings_general_dt_output
-        settings["h"] = st.session_state.settings_mixedlayer_h
-        settings["beta"] = st.session_state.settings_mixedlayer_beta
-        settings["div"] = st.session_state.settings_mixedlayer_div
-        settings["theta"] = st.session_state.settings_temperature_theta
-        settings["dtheta"] = st.session_state.settings_temperature_dtheta
-        settings["wtheta"] = st.session_state.settings_temperature_wtheta
-        settings["gammatheta"] = st.session_state.settings_temperature_gammatheta
-        st.session_state.all_runs[st.session_state.all_runs_key] = MixedLayerModel(settings)
+        settings["runtime"] = ss.settings_general_runtime
+        settings["dt"] = ss.settings_general_dt
+        settings["dt_output"] = ss.settings_general_dt_output
+        settings["h"] = ss.settings_mixedlayer_h
+        settings["beta"] = ss.settings_mixedlayer_beta
+        settings["div"] = ss.settings_mixedlayer_div
+        settings["theta"] = ss.settings_temperature_theta
+        settings["dtheta"] = ss.settings_temperature_dtheta
+        settings["wtheta"] = ss.settings_temperature_wtheta
+        settings["gammatheta"] = ss.settings_temperature_gammatheta
+        ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings)
         st.rerun()
 
     if col3.button("Save & close"):
-        del(st.session_state.all_runs[st.session_state.all_runs_key])
+        del(ss.all_runs[ss.all_runs_key])
         settings = {}
-        settings["runtime"] = st.session_state.settings_general_runtime
-        settings["dt"] = st.session_state.settings_general_dt
-        settings["dt_output"] = st.session_state.settings_general_dt_output
-        settings["h"] = st.session_state.settings_mixedlayer_h
-        settings["beta"] = st.session_state.settings_mixedlayer_beta
-        settings["div"] = st.session_state.settings_mixedlayer_div
-        settings["theta"] = st.session_state.settings_temperature_theta
-        settings["dtheta"] = st.session_state.settings_temperature_dtheta
-        settings["wtheta"] = st.session_state.settings_temperature_wtheta
-        settings["gammatheta"] = st.session_state.settings_temperature_gammatheta
-        st.session_state.all_runs[st.session_state.all_runs_key] = MixedLayerModel(settings)
-        st.session_state.main_mode = 0
+        settings["runtime"] = ss.settings_general_runtime
+        settings["dt"] = ss.settings_general_dt
+        settings["dt_output"] = ss.settings_general_dt_output
+        settings["h"] = ss.settings_mixedlayer_h
+        settings["beta"] = ss.settings_mixedlayer_beta
+        settings["div"] = ss.settings_mixedlayer_div
+        settings["theta"] = ss.settings_temperature_theta
+        settings["dtheta"] = ss.settings_temperature_dtheta
+        settings["wtheta"] = ss.settings_temperature_wtheta
+        settings["gammatheta"] = ss.settings_temperature_gammatheta
+        ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings)
+        ss.main_mode = 0
         st.rerun()
 
     if col4.button("Reset"):
         st.rerun()
 
     if col5.button("Close"):
-        st.session_state.main_mode = 0
+        ss.main_mode = 0
         st.rerun()
     
     tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
