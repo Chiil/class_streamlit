@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit import session_state as ss
-from classes import MixedLayerModel, LinePlot
+from classes import MixedLayerModel, LinePlot, ProfilePlot
 import tomllib
 import plotly.express as px
 import plotly.graph_objects as go
@@ -73,7 +73,7 @@ with st.sidebar:
     if new_line_plot.button("", help="New timeseries plot", icon=":material/line_axis:", use_container_width=True):
         ss.line_plots.append(LinePlot())
     if new_profile.button("", help="New profile plot", icon=":material/vertical_align_top:", use_container_width=True):
-        pass
+        ss.line_plots.append(ProfilePlot())
     if new_skewt.button("", help="New Skew-T plot", icon=":material/partly_cloudy_day:", use_container_width=True):
         pass
 
@@ -105,18 +105,43 @@ with st.sidebar:
                     key=f"plot_{i}_runs",
                 )
 
+        elif isinstance(plot, ProfilePlot):
+            if f"plot_{i}_runs" not in ss:
+                ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
+            else:
+                ss[f"plot_{i}_runs"] = plot.selected_runs
+
+            # Update plot state BEFORE rendering selectboxes
+            if f"plot_{i}_xaxis" in ss:
+                plot.xaxis_key = ss[f"plot_{i}_xaxis"]
+                plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
+
+            with st.container(border=True):
+                st.header(f"Plot {i}")
+                x_axis, time_slider = st.columns(2)
+                x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
+                time_slider.slider("Time", 0.0, 3.0, 0.0, 0.5, key=f"plot_{i}_time")
+
+                plot.selected_runs = st.multiselect(
+                    "Runs to plot",
+                    options=list(ss.all_runs.keys()),
+                    key=f"plot_{i}_runs",
+                )
+
+
 
 if ss.main_mode == 0:
     for i, plot in enumerate(ss.line_plots):
-        with st.container(border=True):
-            st.subheader(f"Plot {i}")
-            fig = go.Figure()
-            for run_name in plot.selected_runs:
-                run = ss.all_runs[run_name]
-                fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name))
-            fig.update_traces(showlegend=True)
-            fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title=plot.yaxis_key)
-            st.plotly_chart(fig, key=f"plot_{i}_plotly")
+        if isinstance(plot, LinePlot):
+            with st.container(border=True):
+                st.subheader(f"Plot {i}")
+                fig = go.Figure()
+                for run_name in plot.selected_runs:
+                    run = ss.all_runs[run_name]
+                    fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name))
+                fig.update_traces(showlegend=True)
+                fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title=plot.yaxis_key)
+                st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
 
     # col_plot1, col_plot2 = st.columns(2)

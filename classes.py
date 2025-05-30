@@ -97,3 +97,10 @@ class LinePlot:
         self.xaxis_key = self.xaxis_options[0]
         self.yaxis_key = self.yaxis_options[0]
         self.selected_runs = []
+
+
+class ProfilePlot:
+    def __init__(self):
+        self.xaxis_options = ["theta"]
+        self.xaxis_index = 0
+        self.selected_runs = []
