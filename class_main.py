@@ -112,7 +112,13 @@ class LinePlot:
 
 
 def process_name_change():
-    pass
+    for i, plot in enumerate(ss.line_plots):
+        for j, run_name in enumerate(plot.selected_runs):
+            if run_name == ss.all_runs_key:
+                plot.selected_runs[j] = ss.run_name_input
+                ss[f"plot_{i}_runs"][j] = ss.run_name_input
+                ss[f"_plot_{i}_runs"][j] = ss.run_name_input
+
 
 # state to save
 if "all_runs" not in ss:
