@@ -135,16 +135,16 @@ with st.sidebar:
     st.header("Experiments")
 
     # handle selectbox selection first
-    st.selectbox(
+    selected_run = st.selectbox(
         "Name",
         ss.all_runs.keys(),
-        key="run_selector",
         index=list(ss.all_runs.keys()).index(ss.all_runs_key)
     )
 
     # update index if changed
-    if ss.run_selector != ss.all_runs_key:
-        ss.all_runs_key = ss.run_selector
+    if selected_run != ss.all_runs_key:
+        ss.all_runs_key = selected_run
+        st.rerun()
 
     clone_run, edit_run, delete_run = st.columns(3)
     if clone_run.button("", icon=":material/content_copy:", use_container_width=True):
