@@ -92,7 +92,7 @@ class MixedLayerModel:
                 output.h[ii] = self.h
                 output.theta[ii] = self.theta
                 output.dtheta[ii] = self.dtheta
-        
+
         self.output = pd.DataFrame(data = {
             "time": output.time,
             "h": output.h,
@@ -185,7 +185,7 @@ with st.sidebar:
         if f"plot_{i}_xaxis" in ss:
             plot.xaxis_key = ss[f"plot_{i}_xaxis"]
             plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
-        
+
         if f"plot_{i}_yaxis" in ss:
             plot.yaxis_key = ss[f"plot_{i}_yaxis"]
             plot.yaxis_index = plot.yaxis_options.index(plot.yaxis_key)
@@ -211,7 +211,7 @@ if ss.main_mode == 0:
             for run_name in plot.selected_runs:
                 run = ss.all_runs[run_name]
                 fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name))
-            fig.update_traces(showlegend=True) 
+            fig.update_traces(showlegend=True)
             fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title=plot.yaxis_key)
             st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
@@ -291,7 +291,7 @@ elif ss.main_mode == 1:
         ss.all_runs[new_name] = ss.all_runs.pop(ss.all_runs_key)
         ss.all_runs_key = new_name
         st.rerun()
-    
+
     if col2.button("Save"):
         del(ss.all_runs[ss.all_runs_key])
         settings = {}
@@ -331,9 +331,9 @@ elif ss.main_mode == 1:
     if col5.button("Close"):
         ss.main_mode = 0
         st.rerun()
-    
+
     tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
-    
+
     with tab_default:
         col1, col2 = st.columns(2)
         with col1:
@@ -345,7 +345,7 @@ elif ss.main_mode == 1:
                     format="%0.0f",
                     key="settings_general_runtime"
                 )
-    
+
                 st.number_input(
                     r"$\Delta t$ (s)",
                     help="time step (s)",
@@ -353,7 +353,7 @@ elif ss.main_mode == 1:
                     format="%0.1f",
                     key="settings_general_dt"
                 )
-    
+
                 st.number_input(
                     r"output $\Delta t$ (s)",
                     help="output time step (s)",
@@ -361,7 +361,7 @@ elif ss.main_mode == 1:
                     format="%0.1f",
                     key="settings_general_dt_output"
                 )
-    
+
             with st.expander("Mixed layer", expanded=True):
                 st.number_input(
                     r"$h$ (m)",
@@ -370,7 +370,7 @@ elif ss.main_mode == 1:
                     format="%0.0f",
                     key="settings_mixedlayer_h"
                 )
-    
+
                 st.number_input(
                     r"$\beta$ (-)",
                     help="entrainment coefficient (-)",
@@ -378,7 +378,7 @@ elif ss.main_mode == 1:
                     format="%0.2f",
                     key="settings_mixedlayer_beta"
                 )
-    
+
                 st.number_input(
                     r"$div$ (s-1)",
                     help="large-scale divergence (s-1)",
@@ -386,7 +386,7 @@ elif ss.main_mode == 1:
                     format="%0.3e",
                     key="settings_mixedlayer_div"
                 )
-    
+
         with col2:
             with st.expander("Temperature", expanded=True):
                 st.number_input(
@@ -396,7 +396,7 @@ elif ss.main_mode == 1:
                     format="%0.1f",
                     key="settings_temperature_theta"
                 )
-    
+
                 st.number_input(
                     r"$\Delta \theta$ (K)",
                     help="potential temperature jump (K)",
@@ -404,7 +404,7 @@ elif ss.main_mode == 1:
                     format="%0.2f",
                     key="settings_temperature_dtheta"
                 )
-    
+
                 st.number_input(
                     r"$\overline{w^\prime \theta^\prime}_s$ (K m s-1)",
                     help="potential temperature surface flux (K m s-1)",
@@ -412,7 +412,7 @@ elif ss.main_mode == 1:
                     format="%0.2f",
                     key="settings_temperature_wtheta"
                 )
-    
+
                 st.number_input(
                     r"$\gamma_\theta$ (K m-1)",
                     help="potential temperature lapse rate (K m-1)",
