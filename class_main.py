@@ -1,8 +1,6 @@
 import streamlit as st
 from streamlit import session_state as ss
-import copy
-import numpy as np
-import pandas as pd
+from classes import MixedLayerModel, LinePlot
 import tomllib
 import plotly.express as px
 import plotly.graph_objects as go
@@ -13,102 +11,6 @@ st.set_page_config(layout="wide")
 
 with open(f"default_settings.toml", "rb") as f:
     default_settings = tomllib.load(f)
-
-
-class MixedLayerModel:
-    class Output:
-        pass
-
-
-    class Input:
-        pass
-
-
-    def __init__(self, settings):
-        self.settings = settings
-
-        self.runtime = settings["runtime"]
-        self.dt = settings["dt"]
-        self.dt_output = settings["dt_output"]
-
-        self.h = settings["h"]
-        self.beta = settings["beta"]
-        self.div = settings["div"]
-
-        self.theta = settings["theta"]
-        self.dtheta = settings["dtheta"]
-        self.wtheta = settings["wtheta"]
-        self.gammatheta = settings["gammatheta"]
-
-        self.run()
-
-
-    def step(self):
-        # First, compute the growth.
-        # CvH, improve later, no moisture now
-        wthetav = self.wtheta
-        thetav = self.theta
-        dthetav = self.dtheta
-        we = self.beta * wthetav / dthetav
-        ws = - self.h * self.div
-
-        # Compute the tendencies.
-        dhdt = we + ws
-        dthetadt = (self.wtheta + we * self.dtheta) / self.h
-        ddthetadt = we * self.gammatheta - dthetadt
-
-        # Integrate the variables.
-        self.time += self.dt
-        self.h += self.dt * dhdt
-        self.theta += self.dt * dthetadt
-        self.dtheta += self.dt * ddthetadt
-
-
-    def run(self):
-        self.time = 0
-
-        nt = round(self.runtime / self.dt)
-        nt_output = round(nt * self.dt / self.dt_output) + 1
-        nt_ratio = round(self.dt_output / self.dt)
-
-        # Output
-        output = self.Output()
-        output.time = np.nan * np.zeros(nt_output)
-        output.h = np.nan * np.zeros(nt_output)
-        output.theta = np.nan * np.zeros(nt_output)
-        output.dtheta = np.nan * np.zeros(nt_output)
-
-        output.time[0] = self.time
-        output.h[0] = self.h
-        output.theta[0] = self.theta
-        output.dtheta[0] = self.dtheta
-
-        for i in range(1, nt+1):
-            self.step()
-
-            if (i % nt_ratio) == 0:
-                ii = i // nt_ratio
-                output.time[ii] = self.time / 3600 # convert to hours.
-                output.h[ii] = self.h
-                output.theta[ii] = self.theta
-                output.dtheta[ii] = self.dtheta
-
-        self.output = pd.DataFrame(data = {
-            "time": output.time,
-            "h": output.h,
-            "theta": output.theta,
-            "dtheta": output.dtheta}) #.set_index("time") do not set index, so time can be queried
-
-
-class LinePlot:
-    def __init__(self):
-        self.xaxis_options = ["time", "time UTC"]
-        self.yaxis_options = ["h", "theta", "dtheta"]
-        self.xaxis_index = 0
-        self.yaxis_index = 0
-        self.xaxis_key = self.xaxis_options[0]
-        self.yaxis_key = self.yaxis_options[0]
-        self.selected_runs = []
 
 
 def process_name_change():
@@ -176,31 +78,32 @@ with st.sidebar:
         pass
 
     for i, plot in enumerate(ss.line_plots):
-        if f"plot_{i}_runs" not in ss:
-            ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
-        else:
-            ss[f"plot_{i}_runs"] = plot.selected_runs
+        if isinstance(plot, LinePlot):
+            if f"plot_{i}_runs" not in ss:
+                ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
+            else:
+                ss[f"plot_{i}_runs"] = plot.selected_runs
 
-        # Update plot state BEFORE rendering selectboxes
-        if f"plot_{i}_xaxis" in ss:
-            plot.xaxis_key = ss[f"plot_{i}_xaxis"]
-            plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
+            # Update plot state BEFORE rendering selectboxes
+            if f"plot_{i}_xaxis" in ss:
+                plot.xaxis_key = ss[f"plot_{i}_xaxis"]
+                plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
 
-        if f"plot_{i}_yaxis" in ss:
-            plot.yaxis_key = ss[f"plot_{i}_yaxis"]
-            plot.yaxis_index = plot.yaxis_options.index(plot.yaxis_key)
+            if f"plot_{i}_yaxis" in ss:
+                plot.yaxis_key = ss[f"plot_{i}_yaxis"]
+                plot.yaxis_index = plot.yaxis_options.index(plot.yaxis_key)
 
-        with st.container(border=True):
-            st.header(f"Plot {i}")
-            x_axis, y_axis = st.columns(2)
-            x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
-            y_axis.selectbox("Y-axis", plot.yaxis_options, index=plot.yaxis_index, key=f"plot_{i}_yaxis")
+            with st.container(border=True):
+                st.header(f"Plot {i}")
+                x_axis, y_axis = st.columns(2)
+                x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
+                y_axis.selectbox("Y-axis", plot.yaxis_options, index=plot.yaxis_index, key=f"plot_{i}_yaxis")
 
-            plot.selected_runs = st.multiselect(
-                "Runs to plot",
-                options=list(ss.all_runs.keys()),
-                key=f"plot_{i}_runs",
-            )
+                plot.selected_runs = st.multiselect(
+                    "Runs to plot",
+                    options=list(ss.all_runs.keys()),
+                    key=f"plot_{i}_runs",
+                )
 
 
 if ss.main_mode == 0:
