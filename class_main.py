@@ -111,6 +111,9 @@ class LinePlot:
         self.selected_runs = []
 
 
+def process_name_change():
+    pass
+
 # state to save
 if "all_runs" not in ss:
     ss.all_runs = {"Default": MixedLayerModel(default_settings)}
@@ -278,7 +281,7 @@ elif ss.main_mode == 1:
 
     # text input for editing the current run name
     new_name = col1.text_input(
-        "Edit current run name", value=ss.all_runs_key, key="run_name_input"
+        "Edit current run name", value=ss.all_runs_key, key="run_name_input", on_change=process_name_change
     )
 
     # update the name if it changed
