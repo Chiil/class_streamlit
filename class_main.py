@@ -116,8 +116,6 @@ def process_name_change():
         for j, run_name in enumerate(plot.selected_runs):
             if run_name == ss.all_runs_key:
                 plot.selected_runs[j] = ss.run_name_input
-                ss[f"plot_{i}_runs"][j] = ss.run_name_input
-                ss[f"_plot_{i}_runs"][j] = ss.run_name_input
 
 
 # state to save
@@ -137,7 +135,7 @@ with st.sidebar:
     st.header("Experiments")
 
     # handle selectbox selection first
-    selected_key = st.selectbox(
+    st.selectbox(
         "Name",
         ss.all_runs.keys(),
         key="run_selector",
@@ -145,9 +143,8 @@ with st.sidebar:
     )
 
     # update index if changed
-    if selected_key != ss.all_runs_key:
-        ss.all_runs_key = selected_key
-        st.rerun()
+    if ss.run_selector != ss.all_runs_key:
+        ss.all_runs_key = ss.run_selector
 
     clone_run, edit_run, delete_run = st.columns(3)
     if clone_run.button("", icon=":material/content_copy:", use_container_width=True):
@@ -179,10 +176,10 @@ with st.sidebar:
         pass
 
     for i, plot in enumerate(ss.line_plots):
-        if f"_plot_{i}_runs" not in ss:
-            ss[f"_plot_{i}_runs"] = list(ss.all_runs.keys())
         if f"plot_{i}_runs" not in ss:
-            ss[f"plot_{i}_runs"] = ss[f"_plot_{i}_runs"]
+            ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
+        else:
+            ss[f"plot_{i}_runs"] = plot.selected_runs
 
         # Update plot state BEFORE rendering selectboxes
         if f"plot_{i}_xaxis" in ss:
@@ -204,8 +201,6 @@ with st.sidebar:
                 options=list(ss.all_runs.keys()),
                 key=f"plot_{i}_runs",
             )
-
-            ss[f"_plot_{i}_runs"] = ss[f"plot_{i}_runs"]
 
 
 if ss.main_mode == 0:
