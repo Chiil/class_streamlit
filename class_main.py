@@ -143,6 +143,27 @@ if ss.main_mode == 0:
                 fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title=plot.yaxis_key)
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
+        elif isinstance(plot, ProfilePlot):
+            with st.container(border=True):
+                st.subheader(f"Plot {i}")
+                fig = go.Figure()
+                for run_name in plot.selected_runs:
+                    run = ss.all_runs[run_name]
+
+                    h = run.output.h.values[-1]
+                    theta = run.output.theta.values[-1]
+                    dtheta = run.output.dtheta.values[-1]
+                    gammatheta = run.gammatheta
+
+                    x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h)]
+                    z_plot = [0, h, h, 2000.0]
+
+                    fig.add_trace(go.Scatter(x=x_plot, y=z_plot, mode="lines+markers", name=run_name))
+                fig.update_traces(showlegend=True)
+                fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title="z")
+                st.plotly_chart(fig, key=f"plot_{i}_plotly")
+
+
 
     # col_plot1, col_plot2 = st.columns(2)
 
