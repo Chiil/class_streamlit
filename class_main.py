@@ -28,7 +28,7 @@ if "all_runs_key" not in ss:
 if "main_mode" not in ss:
     ss.main_mode = 0
 if "line_plots" not in ss:
-    ss.line_plots = []
+    ss.line_plots = [LinePlot()]
 
 
 # sidebar
