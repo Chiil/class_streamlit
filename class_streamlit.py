@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
+# Handle the settings at startup.
 st.set_page_config(layout="wide")
 
 
@@ -20,18 +21,22 @@ def process_name_change():
                 plot.selected_runs[j] = ss.run_name_input
 
 
-# state to save
+# Deal with the state.
 if "all_runs" not in ss:
-    ss.all_runs = {"Default": MixedLayerModel(default_settings)}
+    ss.all_runs = {"Default": MixedLayerModel(default_settings)} # Start the code with a fully run default case.
 if "all_runs_key" not in ss:
     ss.all_runs_key = "Default"
 if "main_mode" not in ss:
     ss.main_mode = 0
 if "line_plots" not in ss:
-    ss.line_plots = [LinePlot()]
+    ss.line_plots = [LinePlot()] # Start with one line plot.
+else:
+    for i, plot in enumerate(ss.line_plots):
+        if f"plot_{i}_runs" in ss:
+            ss[f"plot_{i}_runs"] = ss[f"plot_{i}_runs"]
 
 
-# sidebar
+# Side bar.
 with st.sidebar:
     st.title("CLASS web")
     st.header("Experiments")
@@ -78,12 +83,10 @@ with st.sidebar:
         pass
 
     for i, plot in enumerate(ss.line_plots):
-        if isinstance(plot, LinePlot):
-            if f"plot_{i}_runs" not in ss:
-                ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
-            else:
-                ss[f"plot_{i}_runs"] = plot.selected_runs
+        if f"plot_{i}_runs" not in ss:
+            ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
 
+        if isinstance(plot, LinePlot):
             # Update plot state BEFORE rendering selectboxes
             if f"plot_{i}_xaxis" in ss:
                 plot.xaxis_key = ss[f"plot_{i}_xaxis"]
@@ -106,11 +109,6 @@ with st.sidebar:
                 )
 
         elif isinstance(plot, ProfilePlot):
-            if f"plot_{i}_runs" not in ss:
-                ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
-            else:
-                ss[f"plot_{i}_runs"] = plot.selected_runs
-
             # Update plot state BEFORE rendering selectboxes
             if f"plot_{i}_xaxis" in ss:
                 plot.xaxis_key = ss[f"plot_{i}_xaxis"]
