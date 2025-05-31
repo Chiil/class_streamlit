@@ -116,11 +116,15 @@ with st.sidebar:
                 plot.xaxis_key = ss[f"plot_{i}_xaxis"]
                 plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
 
+            if f"plot_{i}_time" in ss:
+                plot.time_plot = ss[f"plot_{i}_time"]
+
             with st.container(border=True):
                 st.header(f"Plot {i}")
                 x_axis, time_slider = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
-                time_slider.slider("Time", 0.0, 3.0, 0.0, 0.5, key=f"plot_{i}_time")
+
+                plot.time_plot = time_slider.slider("Time", 0.0, 3.0, plot.time_plot, 0.25, key=f"plot_{i}_time")
 
                 plot.selected_runs = st.multiselect(
                     "Runs to plot",
@@ -150,52 +154,23 @@ if ss.main_mode == 0:
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
 
-                    h = run.output.h.values[-1]
-                    theta = run.output.theta.values[-1]
-                    dtheta = run.output.dtheta.values[-1]
-                    gammatheta = run.gammatheta
+                    time_plot = plot.time_plot * 3600
+                    if time_plot <= run.runtime:
+                        idx = round(time_plot / run.dt_output)
 
-                    x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h)]
-                    z_plot = [0, h, h, 2000.0]
+                        h = run.output.h.values[idx]
+                        theta = run.output.theta.values[idx]
+                        dtheta = run.output.dtheta.values[idx]
+                        gammatheta = run.gammatheta
 
-                    fig.add_trace(go.Scatter(x=x_plot, y=z_plot, mode="lines+markers", name=run_name))
+                        x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h)]
+                        z_plot = [0, h, h, 2000.0]
+
+                        fig.add_trace(go.Scatter(x=x_plot, y=z_plot, mode="lines+markers", name=run_name))
+
                 fig.update_traces(showlegend=True)
                 fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title="z")
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
-
-
-
-    # col_plot1, col_plot2 = st.columns(2)
-
-    # with col_plot1.container(border=True):
-    #     st.subheader("Plot 1")
-    #     fig = go.Figure()
-    #     for name, run in ss.all_runs.items():
-    #         fig.add_trace(go.Scatter(x=run.output.index / 3600, y=run.output["h"], mode="lines+markers", name=name))
-    #     fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="time (h)", yaxis_title="h (m)")
-    #     st.plotly_chart(fig)
-
-    # with col_plot2.container(border=True):
-    #     st.subheader("Plot 2")
-    #     fig = go.Figure()
-
-    #     for name, run in ss.all_runs.items():
-    #         h = run.output["h"].values[-1]
-    #         theta = run.output["theta"].values[-1]
-    #         dtheta = run.output["dtheta"].values[-1]
-    #         gammatheta = run.gammatheta
-
-    #         z_plot = np.array([ 0, h, h, 2000.0 ])
-    #         theta_plot = np.array([ theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h) ])
-
-    #         df = pd.DataFrame({"theta": theta_plot, "z": z_plot })
-
-    #         fig.add_trace(go.Scatter(x=df["theta"], y=df["z"], mode="lines+markers", name=name))
-
-    #     fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title="theta (K)", yaxis_title="z (m)")
-    #     st.plotly_chart(fig)
-
-
 
 
 elif ss.main_mode == 1:
