@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit import session_state as ss
-from classes import MixedLayerModel, LinePlot, ProfilePlot
+from class_streamlit_defs import *
 import tomllib
 import plotly.express as px
 import plotly.graph_objects as go
@@ -200,7 +200,6 @@ elif ss.main_mode == 1:
         ss.settings_temperature_wtheta = active_run.settings["wtheta"]
     if "settings_temperature_gammatheta" not in ss:
         ss.settings_temperature_gammatheta = active_run.settings["gammatheta"]
-
 
     col1, col2, col3, col4, col5 = st.columns(5, vertical_alignment="bottom")
 
