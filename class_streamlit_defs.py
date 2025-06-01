@@ -4,6 +4,11 @@ import numpy as np
 import pandas as pd
 
 
+# IMPORTANT!
+# All implementations here are in a separate file, because otherwise Streamlit keeps
+# defining them, and then Enum ==  and isinstance do not work properly.
+
+
 class MainMode(Enum):
     PLOT = auto()
     EDIT = auto()

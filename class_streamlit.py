@@ -37,6 +37,7 @@ if "n_plots" not in ss:
 if "all_plots" not in ss:
     ss.all_plots = {0: LinePlot()} # Start with one line plot.
 else:
+    # This code is need to prevent auto-cleanup by streamlit
     for i, plot in ss.all_plots.items():
         if f"plot_{i}_runs" in ss:
             ss[f"plot_{i}_runs"] = ss[f"plot_{i}_runs"]
