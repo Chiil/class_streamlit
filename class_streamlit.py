@@ -14,6 +14,26 @@ with open(f"default_settings.toml", "rb") as f:
     default_settings = tomllib.load(f)
 
 
+# Define all callback functions.
+def process_clone_run():
+    cloned_run = ss.all_runs_key + " (clone)"
+    ss.all_runs[cloned_run] = MixedLayerModel(ss.all_runs[ss.all_runs_key].settings)
+    ss.all_runs_key = cloned_run
+
+
+def process_edit_run():
+    ss.main_mode = MainMode.EDIT
+
+
+def process_delete_run():
+        del(ss.all_runs[ss.all_runs_key])
+        if not ss.all_runs:
+            ss.all_runs = {"Default": MixedLayerModel(default_settings)}
+            ss.all_runs_key = "Default"
+        else:
+            ss.all_runs_key = list(ss.all_runs.keys())[0]
+
+
 def process_name_change():
     for i, plot in ss.all_plots.items():
         for j, run_name in enumerate(plot.selected_runs):
@@ -21,7 +41,7 @@ def process_name_change():
                 ss[f"plot_{i}_runs"][j] = ss.run_name_input
 
 
-def delete_plot(i):
+def process_delete_plot(i):
     del(ss.all_plots[i])
 
 
@@ -61,22 +81,9 @@ with st.sidebar:
         st.rerun()
 
     clone_run, edit_run, delete_run = st.columns(3)
-    if clone_run.button("", icon=":material/content_copy:", use_container_width=True):
-        cloned_run = ss.all_runs_key + " (clone)"
-        ss.all_runs[cloned_run] = MixedLayerModel(ss.all_runs[ss.all_runs_key].settings)
-        ss.all_runs_key = cloned_run
-        st.rerun()
-    if edit_run.button("", icon=":material/edit:", use_container_width=True):
-        ss.main_mode = MainMode.EDIT
-        st.rerun()
-    if delete_run.button("", icon=":material/delete:", use_container_width=True):
-        del(ss.all_runs[ss.all_runs_key])
-        if not ss.all_runs:
-            ss.all_runs = {"Default": MixedLayerModel(default_settings)}
-            ss.all_runs_key = "Default"
-        else:
-            ss.all_runs_key = list(ss.all_runs.keys())[0]
-        st.rerun()
+    clone_run.button("", icon=":material/content_copy:", use_container_width=True, on_click=process_clone_run)
+    edit_run.button("", icon=":material/edit:", use_container_width=True, on_click=process_edit_run)
+    delete_run.button("", icon=":material/delete:", use_container_width=True, on_click=process_delete_run)
 
     st.divider()
 
@@ -115,7 +122,7 @@ with st.sidebar:
                         icon=":material/delete:",
                         use_container_width=True,
                         key=f"plot_{i}_delete",
-                        on_click=delete_plot,
+                        on_click=process_delete_plot,
                         args=(i,)
                 )
 
@@ -149,7 +156,7 @@ with st.sidebar:
                         icon=":material/delete:",
                         use_container_width=True,
                         key=f"plot_{i}_delete",
-                        on_click=delete_plot,
+                        on_click=process_delete_plot,
                         args=(i,)
                 )
 
