@@ -34,6 +34,11 @@ def process_delete_run():
             ss.all_runs_key = list(ss.all_runs.keys())[0]
 
 
+def process_new_line_plot():
+        ss.n_plots += 1
+        ss.all_plots[ss.n_plots] = LinePlot()
+
+
 def process_name_change():
     for i, plot in ss.all_plots.items():
         for j, run_name in enumerate(plot.selected_runs):
@@ -89,9 +94,12 @@ with st.sidebar:
 
     st.header("Plots")
     new_line_plot, new_profile, new_skewt = st.columns(3)
-    if new_line_plot.button("", help="New timeseries plot", icon=":material/line_axis:", use_container_width=True):
-        ss.n_plots += 1
-        ss.all_plots[ss.n_plots] = LinePlot()
+    new_line_plot.button(
+            "",
+            help="New timeseries plot",
+            icon=":material/line_axis:",
+            use_container_width=True,
+            on_click=process_new_line_plot)
     if new_profile.button("", help="New profile plot", icon=":material/vertical_align_top:", use_container_width=True):
         ss.n_plots += 1
         ss.all_plots[ss.n_plots] = ProfilePlot()
