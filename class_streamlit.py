@@ -26,17 +26,26 @@ def process_edit_run():
 
 
 def process_delete_run():
-        del(ss.all_runs[ss.all_runs_key])
-        if not ss.all_runs:
-            ss.all_runs = {"Default": MixedLayerModel(default_settings)}
-            ss.all_runs_key = "Default"
-        else:
-            ss.all_runs_key = list(ss.all_runs.keys())[0]
+    del(ss.all_runs[ss.all_runs_key])
+    if not ss.all_runs:
+        ss.all_runs = {"Default": MixedLayerModel(default_settings)}
+        ss.all_runs_key = "Default"
+    else:
+        ss.all_runs_key = list(ss.all_runs.keys())[0]
 
 
 def process_new_line_plot():
-        ss.n_plots += 1
-        ss.all_plots[ss.n_plots] = LinePlot()
+    ss.n_plots += 1
+    ss.all_plots[ss.n_plots] = LinePlot()
+
+
+def process_new_profile_plot():
+    ss.n_plots += 1
+    ss.all_plots[ss.n_plots] = ProfilePlot()
+
+
+def process_new_skewt_plot():
+    pass
 
 
 def process_name_change():
@@ -93,18 +102,25 @@ with st.sidebar:
     st.divider()
 
     st.header("Plots")
-    new_line_plot, new_profile, new_skewt = st.columns(3)
+    new_line_plot, new_profile_plot, new_skewt_plot = st.columns(3)
     new_line_plot.button(
-            "",
-            help="New timeseries plot",
-            icon=":material/line_axis:",
-            use_container_width=True,
-            on_click=process_new_line_plot)
-    if new_profile.button("", help="New profile plot", icon=":material/vertical_align_top:", use_container_width=True):
-        ss.n_plots += 1
-        ss.all_plots[ss.n_plots] = ProfilePlot()
-    if new_skewt.button("", help="New Skew-T plot", icon=":material/partly_cloudy_day:", use_container_width=True):
-        pass
+        "",
+        help="New timeseries plot",
+        icon=":material/line_axis:",
+        use_container_width=True,
+        on_click=process_new_line_plot)
+    new_profile_plot.button(
+        "",
+        help="New profile plot",
+        icon=":material/vertical_align_top:",
+        use_container_width=True,
+        on_click=process_new_profile_plot)
+    new_skewt_plot.button(
+        "",
+        help="New Skew-T plot",
+        icon=":material/partly_cloudy_day:",
+        use_container_width=True,
+        on_click=process_new_skewt_plot)
 
     for i, plot in ss.all_plots.items():
         if f"plot_{i}_runs" not in ss:
