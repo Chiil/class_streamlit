@@ -21,6 +21,10 @@ def process_name_change():
                 ss[f"plot_{i}_runs"][j] = ss.run_name_input
 
 
+def delete_plot(i):
+    del(ss.line_plots[i])
+
+
 # Deal with the state.
 if "all_runs" not in ss:
     ss.all_runs = {"Default": MixedLayerModel(default_settings)} # Start the code with a fully run default case.
@@ -101,7 +105,15 @@ with st.sidebar:
             with st.container(border=True):
                 col1, col2 = st.columns([2, 1])
                 col1.header(f"Plot {i}")
-                col2.button("", icon=":material/delete:", use_container_width=True, key=f"plot_{i}_delete")
+                col2.button(
+                        "",
+                        icon=":material/delete:",
+                        use_container_width=True,
+                        key=f"plot_{i}_delete",
+                        on_click=delete_plot,
+                        args=(i,)
+                )
+
 
                 x_axis, y_axis = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
@@ -127,7 +139,14 @@ with st.sidebar:
             with st.container(border=True):
                 col1, col2 = st.columns([2, 1])
                 col1.header(f"Plot {i}")
-                col2.button("", icon=":material/delete:", use_container_width=True, key=f"plot_{i}_delete")
+                col2.button(
+                        "",
+                        icon=":material/delete:",
+                        use_container_width=True,
+                        key=f"plot_{i}_delete",
+                        on_click=delete_plot,
+                        args=(i,)
+                )
 
                 x_axis, time_slider = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
