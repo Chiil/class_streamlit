@@ -99,7 +99,10 @@ with st.sidebar:
             plot.selected_runs = ss[f"plot_{i}_runs"]
 
             with st.container(border=True):
-                st.header(f"Plot {i}")
+                col1, col2 = st.columns([2, 1])
+                col1.header(f"Plot {i}")
+                col2.button("", icon=":material/delete:", use_container_width=True, key=f"plot_{i}_delete")
+
                 x_axis, y_axis = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
                 y_axis.selectbox("Y-axis", plot.yaxis_options, index=plot.yaxis_index, key=f"plot_{i}_yaxis")
@@ -122,7 +125,10 @@ with st.sidebar:
             plot.selected_runs = ss[f"plot_{i}_runs"]
 
             with st.container(border=True):
-                st.header(f"Plot {i}")
+                col1, col2 = st.columns([2, 1])
+                col1.header(f"Plot {i}")
+                col2.button("", icon=":material/delete:", use_container_width=True, key=f"plot_{i}_delete")
+
                 x_axis, time_slider = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
 
