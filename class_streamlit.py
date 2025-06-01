@@ -18,6 +18,7 @@ def process_name_change():
     for i, plot in enumerate(ss.line_plots):
         for j, run_name in enumerate(plot.selected_runs):
             if run_name == ss.all_runs_key:
+                ss[f"plot_{i}_runs"] = ss.run_name_input
                 plot.selected_runs[j] = ss.run_name_input
 
 
