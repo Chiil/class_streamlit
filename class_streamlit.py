@@ -15,14 +15,14 @@ with open(f"default_settings.toml", "rb") as f:
 
 
 def process_name_change():
-    for i, plot in enumerate(ss.line_plots):
+    for i, plot in ss.all_plots.items():
         for j, run_name in enumerate(plot.selected_runs):
             if run_name == ss.all_runs_key:
                 ss[f"plot_{i}_runs"][j] = ss.run_name_input
 
 
 def delete_plot(i):
-    del(ss.line_plots[i])
+    del(ss.all_plots[i])
 
 
 # Deal with the state.
@@ -32,10 +32,12 @@ if "all_runs_key" not in ss:
     ss.all_runs_key = "Default"
 if "main_mode" not in ss:
     ss.main_mode = MainMode.PLOT
-if "line_plots" not in ss:
-    ss.line_plots = [LinePlot()] # Start with one line plot.
+if "n_plots" not in ss:
+    ss.n_plots = 0
+if "all_plots" not in ss:
+    ss.all_plots = {0: LinePlot()} # Start with one line plot.
 else:
-    for i, plot in enumerate(ss.line_plots):
+    for i, plot in ss.all_plots.items():
         if f"plot_{i}_runs" in ss:
             ss[f"plot_{i}_runs"] = ss[f"plot_{i}_runs"]
 
@@ -80,13 +82,15 @@ with st.sidebar:
     st.header("Plots")
     new_line_plot, new_profile, new_skewt = st.columns(3)
     if new_line_plot.button("", help="New timeseries plot", icon=":material/line_axis:", use_container_width=True):
-        ss.line_plots.append(LinePlot())
+        ss.n_plots += 1
+        ss.all_plots[ss.n_plots] = LinePlot()
     if new_profile.button("", help="New profile plot", icon=":material/vertical_align_top:", use_container_width=True):
-        ss.line_plots.append(ProfilePlot())
+        ss.n_plots += 1
+        ss.all_plots[ss.n_plots] = ProfilePlot()
     if new_skewt.button("", help="New Skew-T plot", icon=":material/partly_cloudy_day:", use_container_width=True):
         pass
 
-    for i, plot in enumerate(ss.line_plots):
+    for i, plot in ss.all_plots.items():
         if f"plot_{i}_runs" not in ss:
             ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
 
@@ -161,7 +165,7 @@ with st.sidebar:
 
 
 if ss.main_mode == MainMode.PLOT:
-    for i, plot in enumerate(ss.line_plots):
+    for i, plot in ss.all_plots.items():
         if isinstance(plot, LinePlot):
             with st.container(border=True):
                 st.subheader(f"Plot {i}")
