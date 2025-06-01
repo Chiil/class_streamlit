@@ -49,10 +49,19 @@ def process_new_skewt_plot():
 
 
 def process_name_change():
+    ss.run_name_input = ss.run_name_input.strip()
+
+    # Change the run name in the run dictionary.
+    ss.all_runs[ss.run_name_input] = ss.all_runs.pop(ss.all_runs_key)
+
+    # Change the run name in all plot items.
     for i, plot in ss.all_plots.items():
         for j, run_name in enumerate(plot.selected_runs):
             if run_name == ss.all_runs_key:
                 ss[f"plot_{i}_runs"][j] = ss.run_name_input
+
+    # Overwrite the previous key now the info is no longer needed.
+    ss.all_runs_key = ss.run_name_input
 
 
 def process_delete_plot(i):
@@ -266,16 +275,9 @@ elif ss.main_mode == MainMode.EDIT:
     col1, col2, col3, col4, col5 = st.columns(5, vertical_alignment="bottom")
 
     # text input for editing the current run name
-    new_name = col1.text_input(
+    col1.text_input(
         "Edit current run name", value=ss.all_runs_key, key="run_name_input", on_change=process_name_change
     )
-
-    # update the name if it changed
-    new_name = new_name.strip()
-    if new_name != ss.all_runs_key:
-        ss.all_runs[new_name] = ss.all_runs.pop(ss.all_runs_key)
-        ss.all_runs_key = new_name
-        st.rerun()
 
     if col2.button("Save"):
         del(ss.all_runs[ss.all_runs_key])
