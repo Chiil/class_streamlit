@@ -15,6 +15,10 @@ with open(f"default_settings.toml", "rb") as f:
 
 
 # Define all callback functions.
+def process_selected_run():
+    ss.all_runs_key = ss.selected_run
+
+
 def process_clone_run():
     cloned_run = ss.all_runs_key + " (clone)"
     ss.all_runs[cloned_run] = MixedLayerModel(ss.all_runs[ss.all_runs_key].settings)
@@ -26,6 +30,11 @@ def process_edit_run():
 
 
 def process_delete_run():
+    # Delete the run name from all plot items.
+    for i, plot in ss.all_plots.items():
+        if ss.all_runs_key in ss[f"plot_{i}_runs"]:
+            ss[f"plot_{i}_runs"].remove(ss.all_runs_key)
+
     del(ss.all_runs[ss.all_runs_key])
     if not ss.all_runs:
         ss.all_runs = {"Default": MixedLayerModel(default_settings)}
@@ -48,6 +57,10 @@ def process_new_skewt_plot():
     pass
 
 
+def process_delete_plot(i):
+    del(ss.all_plots[i])
+
+
 def process_name_change():
     ss.run_name_input = ss.run_name_input.strip()
 
@@ -64,8 +77,21 @@ def process_name_change():
     ss.all_runs_key = ss.run_name_input
 
 
-def process_delete_plot(i):
-    del(ss.all_plots[i])
+def process_edit_save():
+    del(ss.all_runs[ss.all_runs_key])
+    settings = {}
+    settings["runtime"] = ss.settings_general_runtime
+    settings["dt"] = ss.settings_general_dt
+    settings["dt_output"] = ss.settings_general_dt_output
+    settings["h"] = ss.settings_mixedlayer_h
+    settings["beta"] = ss.settings_mixedlayer_beta
+    settings["div"] = ss.settings_mixedlayer_div
+    settings["theta"] = ss.settings_temperature_theta
+    settings["dtheta"] = ss.settings_temperature_dtheta
+    settings["wtheta"] = ss.settings_temperature_wtheta
+    settings["gammatheta"] = ss.settings_temperature_gammatheta
+    ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings)
+    ss.main_mode = MainMode.PLOT
 
 
 # Deal with the state.
@@ -92,16 +118,13 @@ with st.sidebar:
     st.header("Experiments")
 
     # handle selectbox selection first
-    selected_run = st.selectbox(
+    st.selectbox(
         "Name",
         ss.all_runs.keys(),
-        index=list(ss.all_runs.keys()).index(ss.all_runs_key)
+        index=list(ss.all_runs.keys()).index(ss.all_runs_key),
+        key="selected_run",
+        on_change=process_selected_run
     )
-
-    # update index if changed
-    if selected_run != ss.all_runs_key:
-        ss.all_runs_key = selected_run
-        st.rerun()
 
     clone_run, edit_run, delete_run = st.columns(3)
     clone_run.button("", icon=":material/content_copy:", use_container_width=True, on_click=process_clone_run)
@@ -272,50 +295,22 @@ elif ss.main_mode == MainMode.EDIT:
     if "settings_temperature_gammatheta" not in ss:
         ss.settings_temperature_gammatheta = active_run.settings["gammatheta"]
 
-    col1, col2, col3, col4, col5 = st.columns(5, vertical_alignment="bottom")
+    # Always set the edit key to the selected run.
+    ss.run_name_input = ss.all_runs_key
+
+    col1, col2, col3, col4 = st.columns(4, vertical_alignment="bottom")
 
     # text input for editing the current run name
     col1.text_input(
-        "Edit current run name", value=ss.all_runs_key, key="run_name_input", on_change=process_name_change
+        "Edit current run name", key="run_name_input", on_change=process_name_change
     )
 
-    if col2.button("Save"):
-        del(ss.all_runs[ss.all_runs_key])
-        settings = {}
-        settings["runtime"] = ss.settings_general_runtime
-        settings["dt"] = ss.settings_general_dt
-        settings["dt_output"] = ss.settings_general_dt_output
-        settings["h"] = ss.settings_mixedlayer_h
-        settings["beta"] = ss.settings_mixedlayer_beta
-        settings["div"] = ss.settings_mixedlayer_div
-        settings["theta"] = ss.settings_temperature_theta
-        settings["dtheta"] = ss.settings_temperature_dtheta
-        settings["wtheta"] = ss.settings_temperature_wtheta
-        settings["gammatheta"] = ss.settings_temperature_gammatheta
-        ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings)
+    col2.button("Save", on_click=process_edit_save)
+
+    if col3.button("Reset"):
         st.rerun()
 
-    if col3.button("Save & close"):
-        del(ss.all_runs[ss.all_runs_key])
-        settings = {}
-        settings["runtime"] = ss.settings_general_runtime
-        settings["dt"] = ss.settings_general_dt
-        settings["dt_output"] = ss.settings_general_dt_output
-        settings["h"] = ss.settings_mixedlayer_h
-        settings["beta"] = ss.settings_mixedlayer_beta
-        settings["div"] = ss.settings_mixedlayer_div
-        settings["theta"] = ss.settings_temperature_theta
-        settings["dtheta"] = ss.settings_temperature_dtheta
-        settings["wtheta"] = ss.settings_temperature_wtheta
-        settings["gammatheta"] = ss.settings_temperature_gammatheta
-        ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings)
-        ss.main_mode = MainMode.PLOT
-        st.rerun()
-
-    if col4.button("Reset"):
-        st.rerun()
-
-    if col5.button("Close"):
+    if col4.button("Close"):
         ss.main_mode = MainMode.PLOT
         st.rerun()
 
