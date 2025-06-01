@@ -18,8 +18,7 @@ def process_name_change():
     for i, plot in enumerate(ss.line_plots):
         for j, run_name in enumerate(plot.selected_runs):
             if run_name == ss.all_runs_key:
-                ss[f"plot_{i}_runs"] = ss.run_name_input
-                plot.selected_runs[j] = ss.run_name_input
+                ss[f"plot_{i}_runs"][j] = ss.run_name_input
 
 
 # Deal with the state.
@@ -97,13 +96,15 @@ with st.sidebar:
                 plot.yaxis_key = ss[f"plot_{i}_yaxis"]
                 plot.yaxis_index = plot.yaxis_options.index(plot.yaxis_key)
 
+            plot.selected_runs = ss[f"plot_{i}_runs"]
+
             with st.container(border=True):
                 st.header(f"Plot {i}")
                 x_axis, y_axis = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
                 y_axis.selectbox("Y-axis", plot.yaxis_options, index=plot.yaxis_index, key=f"plot_{i}_yaxis")
 
-                plot.selected_runs = st.multiselect(
+                st.multiselect(
                     "Runs to plot",
                     options=list(ss.all_runs.keys()),
                     key=f"plot_{i}_runs",
@@ -118,6 +119,8 @@ with st.sidebar:
             if f"plot_{i}_time" in ss:
                 plot.time_plot = ss[f"plot_{i}_time"]
 
+            plot.selected_runs = ss[f"plot_{i}_runs"]
+
             with st.container(border=True):
                 st.header(f"Plot {i}")
                 x_axis, time_slider = st.columns(2)
@@ -125,7 +128,7 @@ with st.sidebar:
 
                 plot.time_plot = time_slider.slider("Time", 0.0, 3.0, plot.time_plot, 0.25, key=f"plot_{i}_time")
 
-                plot.selected_runs = st.multiselect(
+                st.multiselect(
                     "Runs to plot",
                     options=list(ss.all_runs.keys()),
                     key=f"plot_{i}_runs",
