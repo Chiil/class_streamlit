@@ -1,6 +1,12 @@
 import copy
+from enum import Enum, auto
 import numpy as np
 import pandas as pd
+
+
+class MainMode(Enum):
+    PLOT = auto()
+    EDIT = auto()
 
 
 class MixedLayerModel:

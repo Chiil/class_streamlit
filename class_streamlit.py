@@ -27,7 +27,7 @@ if "all_runs" not in ss:
 if "all_runs_key" not in ss:
     ss.all_runs_key = "Default"
 if "main_mode" not in ss:
-    ss.main_mode = 0
+    ss.main_mode = MainMode.PLOT
 if "line_plots" not in ss:
     ss.line_plots = [LinePlot()] # Start with one line plot.
 else:
@@ -60,7 +60,7 @@ with st.sidebar:
         ss.all_runs_key = cloned_run
         st.rerun()
     if edit_run.button("", icon=":material/edit:", use_container_width=True):
-        ss.main_mode = 1
+        ss.main_mode = MainMode.EDIT
         st.rerun()
     if delete_run.button("", icon=":material/delete:", use_container_width=True):
         del(ss.all_runs[ss.all_runs_key])
@@ -135,8 +135,7 @@ with st.sidebar:
                 )
 
 
-
-if ss.main_mode == 0:
+if ss.main_mode == MainMode.PLOT:
     for i, plot in enumerate(ss.line_plots):
         if isinstance(plot, LinePlot):
             with st.container(border=True):
@@ -175,7 +174,7 @@ if ss.main_mode == 0:
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
 
-elif ss.main_mode == 1:
+elif ss.main_mode == MainMode.EDIT:
     st.header("Edit run")
 
     active_run = ss.all_runs[ss.all_runs_key]
@@ -247,14 +246,14 @@ elif ss.main_mode == 1:
         settings["wtheta"] = ss.settings_temperature_wtheta
         settings["gammatheta"] = ss.settings_temperature_gammatheta
         ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings)
-        ss.main_mode = 0
+        ss.main_mode = MainMode.PLOT
         st.rerun()
 
     if col4.button("Reset"):
         st.rerun()
 
     if col5.button("Close"):
-        ss.main_mode = 0
+        ss.main_mode = MainMode.PLOT
         st.rerun()
 
     tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
