@@ -61,23 +61,23 @@ def process_delete_plot(i):
     del(ss.all_plots[i])
 
 
-def process_name_change():
+def process_edit_save():
     ss.run_name_input = ss.run_name_input.strip()
 
-    # Change the run name in the run dictionary.
-    ss.all_runs[ss.run_name_input] = ss.all_runs.pop(ss.all_runs_key)
+    if ss.run_name_input != ss.all_runs_key:
+        # Change the run name in the run dictionary.
+        ss.all_runs[ss.run_name_input] = ss.all_runs.pop(ss.all_runs_key)
 
-    # Change the run name in all plot items.
-    for i, plot in ss.all_plots.items():
-        for j, run_name in enumerate(plot.selected_runs):
-            if run_name == ss.all_runs_key:
-                ss[f"plot_{i}_runs"][j] = ss.run_name_input
+        # Change the run name in all plot items.
+        for i, plot in ss.all_plots.items():
+            for j, run_name in enumerate(plot.selected_runs):
+                if run_name == ss.all_runs_key:
+                    ss[f"plot_{i}_runs"][j] = ss.run_name_input
 
-    # Overwrite the previous key now the info is no longer needed.
-    ss.all_runs_key = ss.run_name_input
+        # Overwrite the previous key now the info is no longer needed.
+        ss.all_runs_key = ss.run_name_input
 
-
-def process_edit_save():
+    # Restart the run.
     del(ss.all_runs[ss.all_runs_key])
     settings = {}
     settings["runtime"] = ss.settings_general_runtime
@@ -298,107 +298,98 @@ elif ss.main_mode == MainMode.EDIT:
     # Always set the edit key to the selected run.
     ss.run_name_input = ss.all_runs_key
 
-    col1, col2, col3, col4 = st.columns(4, vertical_alignment="bottom")
+    with st.form("edit_form", border=False):
+        col1, col2 = st.columns(2, vertical_alignment="bottom")
 
-    # text input for editing the current run name
-    col1.text_input(
-        "Edit current run name", key="run_name_input", on_change=process_name_change
-    )
+        # text input for editing the current run name
+        col1.text_input("Edit current run name", key="run_name_input")
+        col2.form_submit_button("Save", on_click=process_edit_save)
 
-    col2.button("Save", on_click=process_edit_save)
+        tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
 
-    if col3.button("Reset"):
-        st.rerun()
+        with tab_default:
+            col1, col2 = st.columns(2)
+            with col1:
+                with st.expander("General", expanded=True):
+                    st.number_input(
+                        r"runtime (s)",
+                        help="total runtime (s)",
+                        step=1.0,
+                        format="%0.0f",
+                        key="settings_general_runtime"
+                    )
 
-    if col4.button("Close"):
-        ss.main_mode = MainMode.PLOT
-        st.rerun()
+                    st.number_input(
+                        r"$\Delta t$ (s)",
+                        help="time step (s)",
+                        step=1.0,
+                        format="%0.1f",
+                        key="settings_general_dt"
+                    )
 
-    tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
+                    st.number_input(
+                        r"output $\Delta t$ (s)",
+                        help="output time step (s)",
+                        step=1.0,
+                        format="%0.1f",
+                        key="settings_general_dt_output"
+                    )
 
-    with tab_default:
-        col1, col2 = st.columns(2)
-        with col1:
-            with st.expander("General", expanded=True):
-                st.number_input(
-                    r"runtime (s)",
-                    help="total runtime (s)",
-                    step=1.0,
-                    format="%0.0f",
-                    key="settings_general_runtime"
-                )
+                with st.expander("Mixed layer", expanded=True):
+                    st.number_input(
+                        r"$h$ (m)",
+                        help="boundary-layer depth (m)",
+                        step=1.0,
+                        format="%0.0f",
+                        key="settings_mixedlayer_h"
+                    )
 
-                st.number_input(
-                    r"$\Delta t$ (s)",
-                    help="time step (s)",
-                    step=1.0,
-                    format="%0.1f",
-                    key="settings_general_dt"
-                )
+                    st.number_input(
+                        r"$\beta$ (-)",
+                        help="entrainment coefficient (-)",
+                        step=0.01,
+                        format="%0.2f",
+                        key="settings_mixedlayer_beta"
+                    )
 
-                st.number_input(
-                    r"output $\Delta t$ (s)",
-                    help="output time step (s)",
-                    step=1.0,
-                    format="%0.1f",
-                    key="settings_general_dt_output"
-                )
+                    st.number_input(
+                        r"$div$ (s-1)",
+                        help="large-scale divergence (s-1)",
+                        step=0.000001,
+                        format="%0.3e",
+                        key="settings_mixedlayer_div"
+                    )
 
-            with st.expander("Mixed layer", expanded=True):
-                st.number_input(
-                    r"$h$ (m)",
-                    help="boundary-layer depth (m)",
-                    step=1.0,
-                    format="%0.0f",
-                    key="settings_mixedlayer_h"
-                )
+            with col2:
+                with st.expander("Temperature", expanded=True):
+                    st.number_input(
+                        r"$\theta$ (K)",
+                        help="mixed-layer potential temperature (K)",
+                        step=0.5,
+                        format="%0.1f",
+                        key="settings_temperature_theta"
+                    )
 
-                st.number_input(
-                    r"$\beta$ (-)",
-                    help="entrainment coefficient (-)",
-                    step=0.01,
-                    format="%0.2f",
-                    key="settings_mixedlayer_beta"
-                )
+                    st.number_input(
+                        r"$\Delta \theta$ (K)",
+                        help="potential temperature jump (K)",
+                        step=0.5,
+                        format="%0.2f",
+                        key="settings_temperature_dtheta"
+                    )
 
-                st.number_input(
-                    r"$div$ (s-1)",
-                    help="large-scale divergence (s-1)",
-                    step=0.000001,
-                    format="%0.3e",
-                    key="settings_mixedlayer_div"
-                )
+                    st.number_input(
+                        r"$\overline{w^\prime \theta^\prime}_s$ (K m s-1)",
+                        help="potential temperature surface flux (K m s-1)",
+                        step=0.01,
+                        format="%0.2f",
+                        key="settings_temperature_wtheta"
+                    )
 
-        with col2:
-            with st.expander("Temperature", expanded=True):
-                st.number_input(
-                    r"$\theta$ (K)",
-                    help="mixed-layer potential temperature (K)",
-                    step=0.5,
-                    format="%0.1f",
-                    key="settings_temperature_theta"
-                )
-
-                st.number_input(
-                    r"$\Delta \theta$ (K)",
-                    help="potential temperature jump (K)",
-                    step=0.5,
-                    format="%0.2f",
-                    key="settings_temperature_dtheta"
-                )
-
-                st.number_input(
-                    r"$\overline{w^\prime \theta^\prime}_s$ (K m s-1)",
-                    help="potential temperature surface flux (K m s-1)",
-                    step=0.01,
-                    format="%0.2f",
-                    key="settings_temperature_wtheta"
-                )
-
-                st.number_input(
-                    r"$\gamma_\theta$ (K m-1)",
-                    help="potential temperature lapse rate (K m-1)",
-                    step=0.0005,
-                    format="%0.4f",
-                    key="settings_temperature_gammatheta"
-                )
+                    st.number_input(
+                        r"$\gamma_\theta$ (K m-1)",
+                        help="potential temperature lapse rate (K m-1)",
+                        step=0.0005,
+                        format="%0.4f",
+                        key="settings_temperature_gammatheta"
+                    )
