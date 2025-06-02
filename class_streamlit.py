@@ -239,12 +239,12 @@ with st.sidebar:
                 col1, col2 = st.columns([2, 1])
                 col1.header(f"Plot {i}")
                 col2.button(
-                        "",
-                        icon=":material/delete:",
-                        use_container_width=True,
-                        key=f"plot_{i}_delete",
-                        on_click=process_delete_plot,
-                        args=(i,)
+                    "",
+                    icon=":material/delete:",
+                    use_container_width=True,
+                    key=f"plot_{i}_delete",
+                    on_click=process_delete_plot,
+                    args=(i,)
                 )
 
                 x_axis, time_slider = st.columns(2)
