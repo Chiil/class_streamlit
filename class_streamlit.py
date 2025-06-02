@@ -17,7 +17,26 @@ with open(f"default_settings.toml", "rb") as f:
     default_name = "Default"
 
 if "run_name" in st.query_params:
-    default_name = str(st.query_params["run_name"])
+    url_settings = {}
+    try:
+        url_settings["runtime"] = float(st.query_params["runtime"])
+        url_settings["dt"] = float(st.query_params["dt"])
+        url_settings["dt_output"] = float(st.query_params["dt_output"])
+        url_settings["h"] = float(st.query_params["h"])
+        url_settings["beta"] = float(st.query_params["beta"])
+        url_settings["div"] = float(st.query_params["div"])
+        url_settings["theta"] = float(st.query_params["theta"])
+        url_settings["dtheta"] = float(st.query_params["dtheta"])
+        url_settings["wtheta"] = float(st.query_params["wtheta"])
+        url_settings["gammatheta"] = float(st.query_params["gammatheta"])
+
+        # Input is valid, overwrite the defaults.
+        default_name = str(st.query_params["run_name"])
+        default_settings = url_settings
+
+    except KeyError:
+        st.warning("The provided input via the URL is incomplete or corrupt, reverting to default settings")
+
     st.query_params.clear()
 
 
