@@ -17,6 +17,8 @@ with open(f"default_settings.toml", "rb") as f:
 
 streamlit_template = plotly.io.templates["streamlit"]
 color_cycle = streamlit_template.layout.colorway
+plot_font_size = 13
+n_maxruns = 128
 
 
 # Define all callback functions.
@@ -28,6 +30,10 @@ def process_clone_run():
     cloned_run = ss.all_runs_key + " (clone)"
     if cloned_run in ss.all_runs:
         st.warning(f"Run name {cloned_run} already exists, aborting clone")
+        return
+
+    if len(ss.all_runs) >= n_maxruns:
+        st.warning(f"Maximum number of {n_maxruns} runs reached, aborting clone")
         return
 
     color_index = ss.available_colors.pop(0)
@@ -118,7 +124,7 @@ def process_edit_cancel():
 
 # Deal with the state.
 if "available_colors" not in ss:
-    ss.available_colors = [i for i in range(10)]
+    ss.available_colors = [i for i in range(n_maxruns)]
 if "all_runs" not in ss:
     color_index = ss.available_colors.pop(0)
     ss.all_runs = {"Default": MixedLayerModel(default_settings, color_index)} # Start the code with a fully run default case.
@@ -261,9 +267,18 @@ if ss.main_mode == MainMode.PLOT:
                 fig = go.Figure()
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
-                    fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name, line=dict(color=color_cycle[run.color_index])))
+                    fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name, line=dict(color=color_cycle[run.color_index % len(color_cycle)])))
                 fig.update_traces(showlegend=True)
-                fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title=plot.yaxis_key)
+                fig.update_layout(
+                    margin={"t": 50, "l": 0, "b": 0, "r": 0},
+                    xaxis_title=plot.xaxis_key,
+                    yaxis_title=plot.yaxis_key,
+                    xaxis_title_font_size=plot_font_size,
+                    xaxis_tickfont_size=plot_font_size,
+                    yaxis_title_font_size=plot_font_size,
+                    yaxis_tickfont_size=plot_font_size,
+                    legend_font_size=plot_font_size,
+                )
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
         elif isinstance(plot, ProfilePlot):
@@ -285,10 +300,19 @@ if ss.main_mode == MainMode.PLOT:
                         x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h)]
                         z_plot = [0, h, h, 2000.0]
 
-                        fig.add_trace(go.Scatter(x=x_plot, y=z_plot, mode="lines+markers", name=run_name, line=dict(color=color_cycle[run.color_index])))
+                        fig.add_trace(go.Scatter(x=x_plot, y=z_plot, mode="lines+markers", name=run_name, line=dict(color=color_cycle[run.color_index % len(color_cycle)])))
 
                 fig.update_traces(showlegend=True)
-                fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title="z")
+                fig.update_layout(
+                    margin={"t": 50, "l": 0, "b": 0, "r": 0},
+                    xaxis_title=plot.xaxis_key,
+                    yaxis_title="z",
+                    xaxis_title_font_size=plot_font_size,
+                    xaxis_tickfont_size=plot_font_size,
+                    yaxis_title_font_size=plot_font_size,
+                    yaxis_tickfont_size=plot_font_size,
+                    legend_font_size=plot_font_size,
+                )
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
 
