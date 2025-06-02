@@ -88,8 +88,6 @@ def process_edit_save():
         # Overwrite the previous key now the info is no longer needed.
         ss.all_runs_key = ss.run_name_input
 
-
-def process_edit_save():
     color = ss.all_runs[ss.all_runs_key].color_index
     del(ss.all_runs[ss.all_runs_key])
     settings = {}
