@@ -4,6 +4,7 @@ from class_streamlit_defs import *
 import tomllib
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io
 
 
 # Handle the settings at startup.
@@ -14,6 +15,10 @@ with open(f"default_settings.toml", "rb") as f:
     default_settings = tomllib.load(f)
 
 
+streamlit_template = plotly.io.templates["streamlit"]
+color_cycle = streamlit_template.layout.colorway
+
+
 # Define all callback functions.
 def process_selected_run():
     ss.all_runs_key = ss.selected_run
@@ -21,7 +26,8 @@ def process_selected_run():
 
 def process_clone_run():
     cloned_run = ss.all_runs_key + " (clone)"
-    ss.all_runs[cloned_run] = MixedLayerModel(ss.all_runs[ss.all_runs_key].settings)
+    color_index = ss.available_colors.pop(0)
+    ss.all_runs[cloned_run] = MixedLayerModel(ss.all_runs[ss.all_runs_key].settings, color_index)
     ss.all_runs_key = cloned_run
 
 
@@ -35,9 +41,14 @@ def process_delete_run():
         if ss.all_runs_key in ss[f"plot_{i}_runs"]:
             ss[f"plot_{i}_runs"].remove(ss.all_runs_key)
 
+    # Return the color to the available color list.
+    ss.available_colors.append(ss.all_runs[ss.all_runs_key].color_index)
+    ss.available_colors.sort()
+
     del(ss.all_runs[ss.all_runs_key])
     if not ss.all_runs:
-        ss.all_runs = {"Default": MixedLayerModel(default_settings)}
+        color_index = ss.available_colors.pop(0)
+        ss.all_runs = {"Default": MixedLayerModel(default_settings, color_index)}
         ss.all_runs_key = "Default"
     else:
         ss.all_runs_key = list(ss.all_runs.keys())[0]
@@ -77,7 +88,9 @@ def process_edit_save():
         # Overwrite the previous key now the info is no longer needed.
         ss.all_runs_key = ss.run_name_input
 
-    # Restart the run.
+
+def process_edit_save():
+    color = ss.all_runs[ss.all_runs_key].color_index
     del(ss.all_runs[ss.all_runs_key])
     settings = {}
     settings["runtime"] = ss.settings_general_runtime
@@ -90,13 +103,16 @@ def process_edit_save():
     settings["dtheta"] = ss.settings_temperature_dtheta
     settings["wtheta"] = ss.settings_temperature_wtheta
     settings["gammatheta"] = ss.settings_temperature_gammatheta
-    ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings)
+    ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings, color)
     ss.main_mode = MainMode.PLOT
 
 
 # Deal with the state.
+if "available_colors" not in ss:
+    ss.available_colors = [i for i in range(10)]
 if "all_runs" not in ss:
-    ss.all_runs = {"Default": MixedLayerModel(default_settings)} # Start the code with a fully run default case.
+    color_index = ss.available_colors.pop(0)
+    ss.all_runs = {"Default": MixedLayerModel(default_settings, color_index)} # Start the code with a fully run default case.
 if "all_runs_key" not in ss:
     ss.all_runs_key = "Default"
 if "main_mode" not in ss:
@@ -236,7 +252,7 @@ if ss.main_mode == MainMode.PLOT:
                 fig = go.Figure()
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
-                    fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name))
+                    fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name, line=dict(color=color_cycle[run.color_index])))
                 fig.update_traces(showlegend=True)
                 fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title=plot.yaxis_key)
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
@@ -260,7 +276,7 @@ if ss.main_mode == MainMode.PLOT:
                         x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h)]
                         z_plot = [0, h, h, 2000.0]
 
-                        fig.add_trace(go.Scatter(x=x_plot, y=z_plot, mode="lines+markers", name=run_name))
+                        fig.add_trace(go.Scatter(x=x_plot, y=z_plot, mode="lines+markers", name=run_name, line=dict(color=color_cycle[run.color_index])))
 
                 fig.update_traces(showlegend=True)
                 fig.update_layout(margin={'t': 50, 'l': 0, 'b': 0, 'r': 0}, xaxis_title=plot.xaxis_key, yaxis_title="z")

@@ -23,8 +23,9 @@ class MixedLayerModel:
         pass
 
 
-    def __init__(self, settings):
+    def __init__(self, settings, color_index):
         self.settings = settings
+        self.color_index = color_index
 
         self.runtime = settings["runtime"]
         self.dt = settings["dt"]
