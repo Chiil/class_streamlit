@@ -41,7 +41,8 @@ if "default_name" not in ss:
         st.query_params.clear()
 
 
-# Set the variables to handle the colors properly.
+# Set the variables to handle the plotting properly.
+ncols = 2
 streamlit_template = plotly.io.templates["streamlit"]
 color_cycle = streamlit_template.layout.colorway
 plot_font_size = 13
@@ -277,7 +278,7 @@ with st.sidebar:
                 x_axis, time_slider = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
 
-                plot.time_plot = time_slider.slider("Time", 0.0, 3.0, plot.time_plot, 0.25, key=f"plot_{i}_time")
+                time_slider.slider("Time", 0.0, 3.0, plot.time_plot, 0.25, key=f"plot_{i}_time")
 
                 st.multiselect(
                     "Runs to plot",
@@ -287,9 +288,13 @@ with st.sidebar:
 
 
 if ss.main_mode == MainMode.PLOT:
+    n = 0
+    cols = st.columns(ncols)
     for i, plot in ss.all_plots.items():
-        if isinstance(plot, LinePlot):
-            with st.container(border=True):
+        col = cols[n % ncols]
+        n += 1
+        with col.container(border=True):
+            if isinstance(plot, LinePlot):
                 st.subheader(f"Plot {i}")
                 fig = go.Figure()
                 for run_name in plot.selected_runs:
@@ -308,8 +313,7 @@ if ss.main_mode == MainMode.PLOT:
                 )
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
-        elif isinstance(plot, ProfilePlot):
-            with st.container(border=True):
+            elif isinstance(plot, ProfilePlot):
                 st.subheader(f"Plot {i}")
                 fig = go.Figure()
                 for run_name in plot.selected_runs:
