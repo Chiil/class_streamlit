@@ -7,14 +7,21 @@ import plotly.graph_objects as go
 import plotly.io
 
 
-# Handle the settings at startup.
+# Ensure that plots fill the whole page, must be first call to streamlit.
 st.set_page_config(layout="wide")
 
 
+# Load the default settings from disk and override with URL settings.
 with open(f"default_settings.toml", "rb") as f:
     default_settings = tomllib.load(f)
+    default_name = "Default"
+
+if "run_name" in st.query_params:
+    default_name = str(st.query_params["run_name"])
+    st.query_params.clear()
 
 
+# Set the variables to handle the colors properly.
 streamlit_template = plotly.io.templates["streamlit"]
 color_cycle = streamlit_template.layout.colorway
 plot_font_size = 13
@@ -58,8 +65,8 @@ def process_delete_run():
     del(ss.all_runs[ss.all_runs_key])
     if not ss.all_runs:
         color_index = ss.available_colors.pop(0)
-        ss.all_runs = {"Default": MixedLayerModel(default_settings, color_index)}
-        ss.all_runs_key = "Default"
+        ss.all_runs = {default_name: MixedLayerModel(default_settings, color_index)}
+        ss.all_runs_key = default_name
     else:
         ss.all_runs_key = list(ss.all_runs.keys())[0]
 
@@ -127,9 +134,9 @@ if "available_colors" not in ss:
     ss.available_colors = [i for i in range(n_maxruns)]
 if "all_runs" not in ss:
     color_index = ss.available_colors.pop(0)
-    ss.all_runs = {"Default": MixedLayerModel(default_settings, color_index)} # Start the code with a fully run default case.
+    ss.all_runs = {default_name: MixedLayerModel(default_settings, color_index)} # Start the code with a fully run default case.
 if "all_runs_key" not in ss:
-    ss.all_runs_key = "Default"
+    ss.all_runs_key = default_name
 if "main_mode" not in ss:
     ss.main_mode = MainMode.PLOT
 if "n_plots" not in ss:
@@ -355,7 +362,7 @@ elif ss.main_mode == MainMode.EDIT:
         col2.form_submit_button("Save", on_click=process_edit_save)
         col3.form_submit_button("Cancel", on_click=process_edit_cancel)
 
-        tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
+        tab_default, tab_fire = st.tabs(["Basic", "Fire plume"])
 
         with tab_default:
             col1, col2 = st.columns(2)

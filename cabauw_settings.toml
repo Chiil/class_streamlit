@@ -1,0 +1,12 @@
+runtime = 10800.0
+dt = 10.0
+dt_output = 300.0
+
+h = 200.0
+beta = 0.25
+div = 0.0
+
+theta = 285.0
+dtheta = 4.0
+wtheta = 0.15
+gammatheta = 0.006
