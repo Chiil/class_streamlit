@@ -12,32 +12,33 @@ st.set_page_config(layout="wide")
 
 
 # Load the default settings from disk and override with URL settings.
-with open(f"default_settings.toml", "rb") as f:
-    default_settings = tomllib.load(f)
-    default_name = "Default"
+if "default_name" not in ss:
+    with open(f"default_settings.toml", "rb") as f:
+        ss.default_settings = tomllib.load(f)
+        ss.default_name = "Default"
 
-if "run_name" in st.query_params:
-    url_settings = {}
-    try:
-        url_settings["runtime"] = float(st.query_params["runtime"])
-        url_settings["dt"] = float(st.query_params["dt"])
-        url_settings["dt_output"] = float(st.query_params["dt_output"])
-        url_settings["h"] = float(st.query_params["h"])
-        url_settings["beta"] = float(st.query_params["beta"])
-        url_settings["div"] = float(st.query_params["div"])
-        url_settings["theta"] = float(st.query_params["theta"])
-        url_settings["dtheta"] = float(st.query_params["dtheta"])
-        url_settings["wtheta"] = float(st.query_params["wtheta"])
-        url_settings["gammatheta"] = float(st.query_params["gammatheta"])
+    if "run_name" in st.query_params:
+        url_settings = {}
+        try:
+            url_settings["runtime"] = float(st.query_params["runtime"])
+            url_settings["dt"] = float(st.query_params["dt"])
+            url_settings["dt_output"] = float(st.query_params["dt_output"])
+            url_settings["h"] = float(st.query_params["h"])
+            url_settings["beta"] = float(st.query_params["beta"])
+            url_settings["div"] = float(st.query_params["div"])
+            url_settings["theta"] = float(st.query_params["theta"])
+            url_settings["dtheta"] = float(st.query_params["dtheta"])
+            url_settings["wtheta"] = float(st.query_params["wtheta"])
+            url_settings["gammatheta"] = float(st.query_params["gammatheta"])
 
-        # Input is valid, overwrite the defaults.
-        default_name = str(st.query_params["run_name"])
-        default_settings = url_settings
+            # Input is valid, overwrite the defaults.
+            ss.default_name = str(st.query_params["run_name"])
+            ss.default_settings = url_settings
 
-    except KeyError:
-        st.warning("The provided input via the URL is incomplete or corrupt, reverting to default settings")
+        except KeyError:
+            st.warning("The provided input via the URL is incomplete or corrupt, reverting to default settings")
 
-    st.query_params.clear()
+        st.query_params.clear()
 
 
 # Set the variables to handle the colors properly.
@@ -84,8 +85,8 @@ def process_delete_run():
     del(ss.all_runs[ss.all_runs_key])
     if not ss.all_runs:
         color_index = ss.available_colors.pop(0)
-        ss.all_runs = {default_name: MixedLayerModel(default_settings, color_index)}
-        ss.all_runs_key = default_name
+        ss.all_runs = {ss.default_name: MixedLayerModel(ss.default_settings, color_index)}
+        ss.all_runs_key = ss.default_name
     else:
         ss.all_runs_key = list(ss.all_runs.keys())[0]
 
@@ -153,9 +154,9 @@ if "available_colors" not in ss:
     ss.available_colors = [i for i in range(n_maxruns)]
 if "all_runs" not in ss:
     color_index = ss.available_colors.pop(0)
-    ss.all_runs = {default_name: MixedLayerModel(default_settings, color_index)} # Start the code with a fully run default case.
+    ss.all_runs = {ss.default_name: MixedLayerModel(ss.default_settings, color_index)} # Start the code with a fully run default case.
 if "all_runs_key" not in ss:
-    ss.all_runs_key = default_name
+    ss.all_runs_key = ss.default_name
 if "main_mode" not in ss:
     ss.main_mode = MainMode.PLOT
 if "n_plots" not in ss:
