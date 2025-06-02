@@ -26,6 +26,10 @@ def process_selected_run():
 
 def process_clone_run():
     cloned_run = ss.all_runs_key + " (clone)"
+    if cloned_run in ss.all_runs:
+        st.warning(f"Run name {cloned_run} already exists, aborting clone")
+        return
+
     color_index = ss.available_colors.pop(0)
     ss.all_runs[cloned_run] = MixedLayerModel(ss.all_runs[ss.all_runs_key].settings, color_index)
     ss.all_runs_key = cloned_run
@@ -76,17 +80,20 @@ def process_edit_save():
     ss.run_name_input = ss.run_name_input.strip()
 
     if ss.run_name_input != ss.all_runs_key:
-        # Change the run name in the run dictionary.
-        ss.all_runs[ss.run_name_input] = ss.all_runs.pop(ss.all_runs_key)
+        if ss.run_name_input in ss.all_runs:
+            st.warning(f"Run name {ss.run_name_input} already exists, skipping name change")
+        else:
+            # Change the run name in the run dictionary.
+            ss.all_runs[ss.run_name_input] = ss.all_runs.pop(ss.all_runs_key)
 
-        # Change the run name in all plot items.
-        for i, plot in ss.all_plots.items():
-            for j, run_name in enumerate(plot.selected_runs):
-                if run_name == ss.all_runs_key:
-                    ss[f"plot_{i}_runs"][j] = ss.run_name_input
+            # Change the run name in all plot items.
+            for i, plot in ss.all_plots.items():
+                for j, run_name in enumerate(plot.selected_runs):
+                    if run_name == ss.all_runs_key:
+                        ss[f"plot_{i}_runs"][j] = ss.run_name_input
 
-        # Overwrite the previous key now the info is no longer needed.
-        ss.all_runs_key = ss.run_name_input
+            # Overwrite the previous key now the info is no longer needed.
+            ss.all_runs_key = ss.run_name_input
 
     color = ss.all_runs[ss.all_runs_key].color_index
     del(ss.all_runs[ss.all_runs_key])
@@ -102,6 +109,10 @@ def process_edit_save():
     settings["wtheta"] = ss.settings_temperature_wtheta
     settings["gammatheta"] = ss.settings_temperature_gammatheta
     ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings, color)
+    ss.main_mode = MainMode.PLOT
+
+
+def process_edit_cancel():
     ss.main_mode = MainMode.PLOT
 
 
@@ -313,11 +324,12 @@ elif ss.main_mode == MainMode.EDIT:
     ss.run_name_input = ss.all_runs_key
 
     with st.form("edit_form", border=False):
-        col1, col2 = st.columns(2, vertical_alignment="bottom")
+        col1, col2, col3 = st.columns(3, vertical_alignment="bottom")
 
         # text input for editing the current run name
         col1.text_input("Edit current run name", key="run_name_input")
         col2.form_submit_button("Save", on_click=process_edit_save)
+        col3.form_submit_button("Cancel", on_click=process_edit_cancel)
 
         tab_default, tab_fire = st.tabs(["Default", "Fire plume"])
 
