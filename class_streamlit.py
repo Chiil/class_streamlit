@@ -333,7 +333,7 @@ if ss.main_mode == MainMode.PLOT:
                     h_max = max(h_max, run.output.h.max())
                     theta_min = min(theta_min, run.output.theta.min())
 
-                h_max *= 1.5
+                h_max *= 1.35
 
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
