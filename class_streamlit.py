@@ -388,6 +388,21 @@ if ss.main_mode == MainMode.PLOT:
                             )
                         )
 
+                        # x_fire_plot = [theta + 3, theta + 3]
+                        # z_fire_plot = [0, h_max]
+
+                        # fig.add_trace(
+                        #     go.Scatter(
+                        #         x=x_fire_plot,
+                        #         y=z_fire_plot,
+                        #         mode="lines",
+                        #         showlegend=True,
+                        #         name="Fire plume",
+                        #         line=dict(color="#000000", dash="dot")
+                        #     )
+                        # )
+
+
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
                     xaxis_range=(theta_min-0.25, theta_max+0.25),
