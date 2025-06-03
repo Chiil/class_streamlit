@@ -44,7 +44,7 @@ if "default_name" not in ss:
 # Set the variables to handle the plotting properly.
 streamlit_template = plotly.io.templates["streamlit"]
 color_cycle = streamlit_template.layout.colorway
-plot_font_size = 13
+plot_font_size = 14
 n_maxruns = 128
 
 
