@@ -16,4 +16,5 @@ case_settings["run_name"] = case_name
 case_url_params = urllib.parse.urlencode(case_settings)
 case_url = f"{base_url}?{case_url_params}"
 
+print(f"Opening URL: {case_url}")
 webbrowser.open(case_url)
