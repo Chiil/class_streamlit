@@ -236,7 +236,7 @@ with st.sidebar:
 
             with st.container(border=True):
                 col1, col2 = st.columns([2, 1])
-                col1.header(f"Plot {i}")
+                col1.header(f":material/line_axis: Plot {i}")
                 col2.button(
                         "",
                         icon=":material/delete:",
@@ -270,7 +270,7 @@ with st.sidebar:
 
             with st.container(border=True):
                 col1, col2 = st.columns([2, 1])
-                col1.header(f"Plot {i}")
+                col1.header(f":material/expand: Plot {i}")
                 col2.button(
                     "",
                     icon=":material/delete:",
@@ -302,7 +302,7 @@ if ss.main_mode == MainMode.PLOT:
         n += 1
         with col.container(border=True):
             if isinstance(plot, LinePlot):
-                st.subheader(f"Plot {i}")
+                st.subheader(f":material/line_axis: Plot {i}")
                 fig = go.Figure()
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
@@ -321,7 +321,7 @@ if ss.main_mode == MainMode.PLOT:
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
             elif isinstance(plot, ProfilePlot):
-                st.subheader(f"Plot {i}")
+                st.subheader(f":material/expand: Plot {i}")
                 fig = go.Figure()
 
                 # Get the plot ranges
