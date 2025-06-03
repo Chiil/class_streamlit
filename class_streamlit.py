@@ -42,7 +42,6 @@ if "default_name" not in ss:
 
 
 # Set the variables to handle the plotting properly.
-ncols = 2
 streamlit_template = plotly.io.templates["streamlit"]
 color_cycle = streamlit_template.layout.colorway
 plot_font_size = 13
@@ -294,7 +293,9 @@ with st.sidebar:
 
 
 if ss.main_mode == MainMode.PLOT:
+    ncols = st.radio("Number of columns", [1, 2, 3, 4], horizontal=True)
     n = 0
+
     cols = st.columns(ncols)
     for i, plot in ss.all_plots.items():
         col = cols[n % ncols]
