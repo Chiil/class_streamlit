@@ -172,7 +172,7 @@ else:
 
 
 # Check the range of plot_times.
-ss.time_max = 0 
+ss.time_max = 0
 for _, run in ss.all_runs.items():
     ss.time_max = max(ss.time_max, run.output.time.values[-1])
 
@@ -322,6 +322,25 @@ if ss.main_mode == MainMode.PLOT:
             elif isinstance(plot, ProfilePlot):
                 st.subheader(f"Plot {i}")
                 fig = go.Figure()
+
+                # Get the plot ranges
+                theta_min = 1e9
+                theta_max = -1e9
+                h_max = -1e9
+
+                for run_name in plot.selected_runs:
+                    run = ss.all_runs[run_name]
+                    h_max = max(h_max, run.output.h.max())
+                    theta_min = min(theta_min, run.output.theta.min())
+
+                h_max *= 1.5
+
+                for run_name in plot.selected_runs:
+                    run = ss.all_runs[run_name]
+                    theta_max_run = (run.output.theta + run.output.dtheta + run.gammatheta*(h_max-run.output.h)).max()
+                    theta_max = max(theta_max, theta_max_run)
+
+                # Plot the profiles.
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
 
@@ -331,8 +350,8 @@ if ss.main_mode == MainMode.PLOT:
                     dtheta = run.output.dtheta.values[0]
                     gammatheta = run.gammatheta
 
-                    x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h)]
-                    z_plot = [0, h, h, 2000.0]
+                    x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
+                    z_plot = [0, h, h, h_max]
 
                     fig.add_trace(
                         go.Scatter(
@@ -355,8 +374,8 @@ if ss.main_mode == MainMode.PLOT:
                         dtheta = run.output.dtheta.values[idx]
                         gammatheta = run.gammatheta
 
-                        x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h)]
-                        z_plot = [0, h, h, 2000.0]
+                        x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
+                        z_plot = [0, h, h, h_max]
 
                         fig.add_trace(
                             go.Scatter(
@@ -371,6 +390,8 @@ if ss.main_mode == MainMode.PLOT:
 
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
+                    xaxis_range=(theta_min-0.25, theta_max+0.25),
+                    yaxis_range=(-25, h_max+50),
                     xaxis_title=plot.xaxis_key,
                     yaxis_title="z",
                     xaxis_title_font_size=plot_font_size,
