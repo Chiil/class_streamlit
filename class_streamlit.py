@@ -208,7 +208,7 @@ with st.sidebar:
     new_profile_plot.button(
         "",
         help="New profile plot",
-        icon=":material/vertical_align_top:",
+        icon=":material/expand:",
         use_container_width=True,
         on_click=process_new_profile_plot)
     new_skewt_plot.button(
