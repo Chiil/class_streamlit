@@ -390,28 +390,32 @@ if ss.main_mode == MainMode.PLOT:
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
 
-                    # Plot the initial state
-                    h = run.output.h.values[0]
-                    theta = run.output.theta.values[0]
-                    dtheta = run.output.dtheta.values[0]
-                    gammatheta = run.gammatheta
+                    # Plot the reference state
+                    time_plot = plot.time_plot[0] * 3600
+                    if time_plot <= run.runtime:
+                        idx = round(time_plot / run.dt_output)
 
-                    x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
-                    z_plot = [0, h, h, h_max]
+                        h = run.output.h.values[idx]
+                        theta = run.output.theta.values[idx]
+                        dtheta = run.output.dtheta.values[idx]
+                        gammatheta = run.gammatheta
 
-                    fig.add_trace(
-                        go.Scatter(
-                            x=x_plot,
-                            y=z_plot,
-                            mode="lines",
-                            showlegend=False,
-                            name=None,
-                            line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
+                        x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
+                        z_plot = [0, h, h, h_max]
+
+                        fig.add_trace(
+                            go.Scatter(
+                                x=x_plot,
+                                y=z_plot,
+                                mode="lines+markers",
+                                showlegend=False,
+                                name=None,
+                                line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
+                            )
                         )
-                    )
 
                     # Plot the actual state if available.
-                    time_plot = plot.time_plot * 3600
+                    time_plot = plot.time_plot[1] * 3600
                     if time_plot <= run.runtime:
                         idx = round(time_plot / run.dt_output)
 
@@ -490,7 +494,7 @@ if ss.main_mode == MainMode.PLOT:
                             go.Scatter(
                                 x=x_plot,
                                 y=z_plot,
-                                mode="lines",
+                                mode="lines+markers",
                                 showlegend=False,
                                 name=None,
                                 line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
