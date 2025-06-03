@@ -291,8 +291,6 @@ with st.sidebar:
                     key=f"plot_{i}_runs",
                 )
 
-                st.pills("🔥 Add fire plume", ["0.1 x", "0.5 x", "Ref", "2 x", "10 x"], selection_mode="multi", key=f"plot_{i}_fire")
-
         elif isinstance(plot, PlumePlot):
             # Update plot state BEFORE rendering selectboxes
             if f"plot_{i}_xaxis" in ss:
@@ -322,13 +320,20 @@ with st.sidebar:
                 time_slider.slider("Time", 0.0, ss.time_max, plot.time_plot, 0.25, key=f"plot_{i}_time")
 
                 st.multiselect(
-                    "Runs to plot",
+                    "Run to plot",
                     options=list(ss.all_runs.keys()),
+                    max_selections=1,
                     key=f"plot_{i}_runs",
                 )
 
-                st.pills("🔥 Add fire plume", ["0.1 x", "0.5 x", "Ref", "2 x", "10 x"], selection_mode="multi", key=f"plot_{i}_fire")
+                if f"plot_{i}_fire" not in ss:
+                    ss[f"plot_{i}_fire"] = ["1 x"]
 
+                st.pills(
+                    "🔥 Fire multiplier",
+                    ["0.25 x", "0.5 x", "1 x", "2 x", "4 x"],
+                    selection_mode="multi",
+                    key=f"plot_{i}_fire")
 
 
 if ss.main_mode == MainMode.PLOT:
@@ -511,6 +516,36 @@ if ss.main_mode == MainMode.PLOT:
                                 line=dict(color=color_cycle[run.color_index % len(color_cycle)])
                             )
                         )
+
+                        ss[f"plot_{i}_fire"].sort()
+
+                        for fire_label in ss[f"plot_{i}_fire"]:
+                            dtheta_fire_ref = 1.0
+
+                            if fire_label == "1 x":
+                                dtheta_fire = dtheta_fire_ref
+                            elif fire_label == "0.25 x":
+                                dtheta_fire = 0.25*dtheta_fire_ref
+                            elif fire_label == "0.5 x":
+                                dtheta_fire = 0.5*dtheta_fire_ref
+                            elif fire_label == "2 x":
+                                dtheta_fire = 2*dtheta_fire_ref
+                            elif fire_label == "4 x":
+                                dtheta_fire = 4*dtheta_fire_ref
+
+                            x_plot = [theta + dtheta_fire, theta + dtheta_fire]
+                            z_plot = [0, h_max]
+
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=x_plot,
+                                    y=z_plot,
+                                    mode="lines",
+                                    showlegend=True,
+                                    name=f"🔥 {fire_label}",
+                                    line=dict(color="black", dash="dot")
+                                )
+                            )
 
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
