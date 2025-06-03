@@ -474,24 +474,24 @@ if ss.main_mode == MainMode.PLOT:
                     run = ss.all_runs[run_name]
 
                     # Plot the initial state
-                    h = run.output.h.values[0]
-                    theta = run.output.theta.values[0]
-                    dtheta = run.output.dtheta.values[0]
-                    gammatheta = run.gammatheta
+                    # h = run.output.h.values[0]
+                    # theta = run.output.theta.values[0]
+                    # dtheta = run.output.dtheta.values[0]
+                    # gammatheta = run.gammatheta
 
-                    x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
-                    z_plot = [0, h, h, h_max]
+                    # x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
+                    # z_plot = [0, h, h, h_max]
 
-                    fig.add_trace(
-                        go.Scatter(
-                            x=x_plot,
-                            y=z_plot,
-                            mode="lines",
-                            showlegend=False,
-                            name=None,
-                            line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
-                        )
-                    )
+                    # fig.add_trace(
+                    #     go.Scatter(
+                    #         x=x_plot,
+                    #         y=z_plot,
+                    #         mode="lines",
+                    #         showlegend=False,
+                    #         name=None,
+                    #         line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
+                    #     )
+                    # )
 
                     # Plot the actual state if available.
                     time_plot = plot.time_plot * 3600
@@ -522,16 +522,21 @@ if ss.main_mode == MainMode.PLOT:
                         for fire_label in ss[f"plot_{i}_fire"]:
                             dtheta_fire_ref = 1.0
 
-                            if fire_label == "1 x":
-                                dtheta_fire = dtheta_fire_ref
-                            elif fire_label == "0.25 x":
+                            if fire_label == "0.25 x":
                                 dtheta_fire = 0.25*dtheta_fire_ref
+                                color = "#781c6d"
                             elif fire_label == "0.5 x":
                                 dtheta_fire = 0.5*dtheta_fire_ref
+                                color = "#bc3754"
+                            elif fire_label == "1 x":
+                                dtheta_fire = dtheta_fire_ref
+                                color = "#dd513a"
                             elif fire_label == "2 x":
                                 dtheta_fire = 2*dtheta_fire_ref
+                                color = "#f37819"
                             elif fire_label == "4 x":
                                 dtheta_fire = 4*dtheta_fire_ref
+                                color = "#fca50a"
 
                             x_plot = [theta + dtheta_fire, theta + dtheta_fire]
                             z_plot = [0, h_max]
@@ -543,7 +548,10 @@ if ss.main_mode == MainMode.PLOT:
                                     mode="lines",
                                     showlegend=True,
                                     name=f"🔥 {fire_label}",
-                                    line=dict(color="black", dash="dot")
+                                    line=dict(
+                                        color=color,
+                                        dash="dot",
+                                        )
                                 )
                             )
 
