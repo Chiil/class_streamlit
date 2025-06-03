@@ -428,6 +428,19 @@ if ss.main_mode == MainMode.PLOT:
                                 line=dict(color=color_cycle[run.color_index % len(color_cycle)])
                             )
                         )
+
+                fig.update_layout(
+                    margin={"t": 50, "l": 0, "b": 0, "r": 0},
+                    xaxis_range=(theta_min-0.25, theta_max+0.25),
+                    yaxis_range=(-25, h_max+50),
+                    xaxis_title=plot.xaxis_key,
+                    yaxis_title="z",
+                    xaxis_title_font_size=plot_font_size,
+                    xaxis_tickfont_size=plot_font_size,
+                    yaxis_title_font_size=plot_font_size,
+                    yaxis_tickfont_size=plot_font_size,
+                    legend_font_size=plot_font_size,
+                )
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
             elif isinstance(plot, PlumePlot):
@@ -498,6 +511,19 @@ if ss.main_mode == MainMode.PLOT:
                                 line=dict(color=color_cycle[run.color_index % len(color_cycle)])
                             )
                         )
+
+                fig.update_layout(
+                    margin={"t": 50, "l": 0, "b": 0, "r": 0},
+                    xaxis_range=(theta_min-0.25, theta_max+0.25),
+                    yaxis_range=(-25, h_max+50),
+                    xaxis_title=plot.xaxis_key,
+                    yaxis_title="z",
+                    xaxis_title_font_size=plot_font_size,
+                    xaxis_tickfont_size=plot_font_size,
+                    yaxis_title_font_size=plot_font_size,
+                    yaxis_tickfont_size=plot_font_size,
+                    legend_font_size=plot_font_size,
+                )
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
 
