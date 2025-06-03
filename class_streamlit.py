@@ -220,10 +220,10 @@ with st.sidebar:
         on_click=process_new_plume_plot)
 
     for i, plot in ss.all_plots.items():
-        if f"plot_{i}_runs" not in ss:
-            ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
-
         if isinstance(plot, LinePlot):
+            if f"plot_{i}_runs" not in ss:
+                ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
+
             # Update plot state BEFORE rendering selectboxes
             if f"plot_{i}_xaxis" in ss:
                 plot.xaxis_key = ss[f"plot_{i}_xaxis"]
@@ -258,6 +258,9 @@ with st.sidebar:
                 )
 
         elif isinstance(plot, ProfilePlot):
+            if f"plot_{i}_runs" not in ss:
+                ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
+
             # Update plot state BEFORE rendering selectboxes
             if f"plot_{i}_xaxis" in ss:
                 plot.xaxis_key = ss[f"plot_{i}_xaxis"]
@@ -292,6 +295,9 @@ with st.sidebar:
                 )
 
         elif isinstance(plot, PlumePlot):
+            if f"plot_{i}_runs" not in ss:
+                ss[f"plot_{i}_runs"] = [ss.all_runs_key]
+
             # Update plot state BEFORE rendering selectboxes
             if f"plot_{i}_xaxis" in ss:
                 plot.xaxis_key = ss[f"plot_{i}_xaxis"]
@@ -553,12 +559,16 @@ if ss.main_mode == MainMode.PLOT:
                                 go.Scatter(
                                     x=x_plot,
                                     y=z_plot,
-                                    mode="lines",
+                                    mode="lines+markers",
                                     showlegend=True,
                                     name=f"🔥 {fire_label}",
                                     line=dict(
                                         color=color,
-                                        dash="dot",
+                                        # dash="dashdot",
+                                        width=1,
+                                        ),
+                                    marker=dict(
+                                        symbol="cross",
                                         )
                                 )
                             )
