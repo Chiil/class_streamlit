@@ -246,7 +246,6 @@ with st.sidebar:
                         args=(i,)
                 )
 
-
                 x_axis, y_axis = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
                 y_axis.selectbox("Y-axis", plot.yaxis_options, index=plot.yaxis_index, key=f"plot_{i}_yaxis")
@@ -290,6 +289,10 @@ with st.sidebar:
                     options=list(ss.all_runs.keys()),
                     key=f"plot_{i}_runs",
                 )
+
+                fire_cols = st.columns([1, 2], vertical_alignment="center")
+                fire_cols[0].checkbox("🔥", value=False, key=f"plot_{i}_fire")
+                fire_cols[1].slider("Factor", 0.0, 10.0, 1.0, 0.25, key=f"plot_{i}_fire_factor")
 
 
 if ss.main_mode == MainMode.PLOT:
@@ -389,20 +392,21 @@ if ss.main_mode == MainMode.PLOT:
                             )
                         )
 
-                        # x_fire_plot = [theta + 3, theta + 3]
-                        # z_fire_plot = [0, h_max]
+                        if ss[f"plot_{i}_fire"]:
+                            dtheta_fire = 1.0 * ss[f"plot_{i}_fire_factor"]
+                            x_fire_plot = [theta + dtheta_fire, theta + dtheta_fire]
+                            z_fire_plot = [0, h_max]
 
-                        # fig.add_trace(
-                        #     go.Scatter(
-                        #         x=x_fire_plot,
-                        #         y=z_fire_plot,
-                        #         mode="lines",
-                        #         showlegend=True,
-                        #         name="Fire plume",
-                        #         line=dict(color="#000000", dash="dot")
-                        #     )
-                        # )
-
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=x_fire_plot,
+                                    y=z_fire_plot,
+                                    mode="lines",
+                                    showlegend=True,
+                                    name="🔥",
+                                    line=dict(color="#000000", dash="dot")
+                                )
+                            )
 
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
