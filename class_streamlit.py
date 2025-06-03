@@ -171,6 +171,12 @@ else:
             ss[f"plot_{i}_runs"] = ss[f"plot_{i}_runs"]
 
 
+# Check the range of plot_times.
+ss.time_max = 0 
+for _, run in ss.all_runs.items():
+    ss.time_max = max(ss.time_max, run.output.time.values[-1])
+
+
 # Side bar.
 with st.sidebar:
     st.title("CLASS web")
@@ -278,7 +284,7 @@ with st.sidebar:
                 x_axis, time_slider = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
 
-                time_slider.slider("Time", 0.0, 3.0, plot.time_plot, 0.25, key=f"plot_{i}_time")
+                time_slider.slider("Time", 0.0, ss.time_max, plot.time_plot, 0.25, key=f"plot_{i}_time")
 
                 st.multiselect(
                     "Runs to plot",
@@ -319,6 +325,27 @@ if ss.main_mode == MainMode.PLOT:
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
 
+                    # Plot the initial state
+                    h = run.output.h.values[0]
+                    theta = run.output.theta.values[0]
+                    dtheta = run.output.dtheta.values[0]
+                    gammatheta = run.gammatheta
+
+                    x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h)]
+                    z_plot = [0, h, h, 2000.0]
+
+                    fig.add_trace(
+                        go.Scatter(
+                            x=x_plot,
+                            y=z_plot,
+                            mode="lines",
+                            showlegend=False,
+                            name=None,
+                            line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
+                        )
+                    )
+
+                    # Plot the actual state if available.
                     time_plot = plot.time_plot * 3600
                     if time_plot <= run.runtime:
                         idx = round(time_plot / run.dt_output)
@@ -331,9 +358,17 @@ if ss.main_mode == MainMode.PLOT:
                         x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(2000.0-h)]
                         z_plot = [0, h, h, 2000.0]
 
-                        fig.add_trace(go.Scatter(x=x_plot, y=z_plot, mode="lines+markers", name=run_name, line=dict(color=color_cycle[run.color_index % len(color_cycle)])))
+                        fig.add_trace(
+                            go.Scatter(
+                                x=x_plot,
+                                y=z_plot,
+                                mode="lines+markers",
+                                showlegend=True,
+                                name=run_name,
+                                line=dict(color=color_cycle[run.color_index % len(color_cycle)])
+                            )
+                        )
 
-                fig.update_traces(showlegend=True)
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
                     xaxis_title=plot.xaxis_key,
