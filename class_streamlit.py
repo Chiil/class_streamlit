@@ -101,8 +101,9 @@ def process_new_profile_plot():
     ss.all_plots[ss.n_plots] = ProfilePlot()
 
 
-def process_new_skewt_plot():
-    pass
+def process_new_plume_plot():
+    ss.n_plots += 1
+    ss.all_plots[ss.n_plots] = PlumePlot()
 
 
 def process_delete_plot(i):
@@ -213,10 +214,10 @@ with st.sidebar:
         on_click=process_new_profile_plot)
     new_skewt_plot.button(
         "",
-        help="New Skew-T plot",
-        icon=":material/partly_cloudy_day:",
+        help="New fire plume plot",
+        icon=":material/local_fire_department:",
         use_container_width=True,
-        on_click=process_new_skewt_plot)
+        on_click=process_new_plume_plot)
 
     for i, plot in ss.all_plots.items():
         if f"plot_{i}_runs" not in ss:
@@ -290,9 +291,44 @@ with st.sidebar:
                     key=f"plot_{i}_runs",
                 )
 
-                fire_cols = st.columns([1, 2], vertical_alignment="center")
-                fire_cols[0].checkbox("🔥", value=False, key=f"plot_{i}_fire")
-                fire_cols[1].slider("Factor", 0.0, 10.0, 1.0, 0.25, key=f"plot_{i}_fire_factor")
+                st.pills("🔥 Add fire plume", ["0.1 x", "0.5 x", "Ref", "2 x", "10 x"], selection_mode="multi", key=f"plot_{i}_fire")
+
+        elif isinstance(plot, PlumePlot):
+            # Update plot state BEFORE rendering selectboxes
+            if f"plot_{i}_xaxis" in ss:
+                plot.xaxis_key = ss[f"plot_{i}_xaxis"]
+                plot.xaxis_index = plot.xaxis_options.index(plot.xaxis_key)
+
+            if f"plot_{i}_time" in ss:
+                plot.time_plot = ss[f"plot_{i}_time"]
+
+            plot.selected_runs = ss[f"plot_{i}_runs"]
+
+            with st.container(border=True):
+                col1, col2 = st.columns([2, 1])
+                col1.header(f":material/expand: Plot {i}")
+                col2.button(
+                    "",
+                    icon=":material/delete:",
+                    use_container_width=True,
+                    key=f"plot_{i}_delete",
+                    on_click=process_delete_plot,
+                    args=(i,)
+                )
+
+                x_axis, time_slider = st.columns(2)
+                x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
+
+                time_slider.slider("Time", 0.0, ss.time_max, plot.time_plot, 0.25, key=f"plot_{i}_time")
+
+                st.multiselect(
+                    "Runs to plot",
+                    options=list(ss.all_runs.keys()),
+                    key=f"plot_{i}_runs",
+                )
+
+                st.pills("🔥 Add fire plume", ["0.1 x", "0.5 x", "Ref", "2 x", "10 x"], selection_mode="multi", key=f"plot_{i}_fire")
+
 
 
 if ss.main_mode == MainMode.PLOT:
@@ -304,6 +340,7 @@ if ss.main_mode == MainMode.PLOT:
         col = cols[n % ncols]
         n += 1
         with col.container(border=True):
+
             if isinstance(plot, LinePlot):
                 st.subheader(f":material/line_axis: Plot {i}")
                 fig = go.Figure()
@@ -391,35 +428,76 @@ if ss.main_mode == MainMode.PLOT:
                                 line=dict(color=color_cycle[run.color_index % len(color_cycle)])
                             )
                         )
+                st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
-                        if ss[f"plot_{i}_fire"]:
-                            dtheta_fire = 1.0 * ss[f"plot_{i}_fire_factor"]
-                            x_fire_plot = [theta + dtheta_fire, theta + dtheta_fire]
-                            z_fire_plot = [0, h_max]
+            elif isinstance(plot, PlumePlot):
+                st.subheader(f":material/local_fire_department: Plot {i}")
+                fig = go.Figure()
 
-                            fig.add_trace(
-                                go.Scatter(
-                                    x=x_fire_plot,
-                                    y=z_fire_plot,
-                                    mode="lines",
-                                    showlegend=True,
-                                    name="🔥",
-                                    line=dict(color="#000000", dash="dot")
-                                )
+                # Get the plot ranges
+                theta_min = 1e9
+                theta_max = -1e9
+                h_max = -1e9
+
+                for run_name in plot.selected_runs:
+                    run = ss.all_runs[run_name]
+                    h_max = max(h_max, run.output.h.max())
+                    theta_min = min(theta_min, run.output.theta.min())
+
+                h_max *= 1.35
+
+                for run_name in plot.selected_runs:
+                    run = ss.all_runs[run_name]
+                    theta_max_run = (run.output.theta + run.output.dtheta + run.gammatheta*(h_max-run.output.h)).max()
+                    theta_max = max(theta_max, theta_max_run)
+
+                # Plot the profiles.
+                for run_name in plot.selected_runs:
+                    run = ss.all_runs[run_name]
+
+                    # Plot the initial state
+                    h = run.output.h.values[0]
+                    theta = run.output.theta.values[0]
+                    dtheta = run.output.dtheta.values[0]
+                    gammatheta = run.gammatheta
+
+                    x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
+                    z_plot = [0, h, h, h_max]
+
+                    fig.add_trace(
+                        go.Scatter(
+                            x=x_plot,
+                            y=z_plot,
+                            mode="lines",
+                            showlegend=False,
+                            name=None,
+                            line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
+                        )
+                    )
+
+                    # Plot the actual state if available.
+                    time_plot = plot.time_plot * 3600
+                    if time_plot <= run.runtime:
+                        idx = round(time_plot / run.dt_output)
+
+                        h = run.output.h.values[idx]
+                        theta = run.output.theta.values[idx]
+                        dtheta = run.output.dtheta.values[idx]
+                        gammatheta = run.gammatheta
+
+                        x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
+                        z_plot = [0, h, h, h_max]
+
+                        fig.add_trace(
+                            go.Scatter(
+                                x=x_plot,
+                                y=z_plot,
+                                mode="lines+markers",
+                                showlegend=True,
+                                name=run_name,
+                                line=dict(color=color_cycle[run.color_index % len(color_cycle)])
                             )
-
-                fig.update_layout(
-                    margin={"t": 50, "l": 0, "b": 0, "r": 0},
-                    xaxis_range=(theta_min-0.25, theta_max+0.25),
-                    yaxis_range=(-25, h_max+50),
-                    xaxis_title=plot.xaxis_key,
-                    yaxis_title="z",
-                    xaxis_title_font_size=plot_font_size,
-                    xaxis_tickfont_size=plot_font_size,
-                    yaxis_title_font_size=plot_font_size,
-                    yaxis_tickfont_size=plot_font_size,
-                    legend_font_size=plot_font_size,
-                )
+                        )
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
 

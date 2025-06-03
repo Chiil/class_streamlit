@@ -118,3 +118,12 @@ class ProfilePlot:
         self.xaxis_key = self.xaxis_options[0]
         self.time_plot = 0.0
         self.selected_runs = []
+
+
+class PlumePlot:
+    def __init__(self):
+        self.xaxis_options = ["theta"]
+        self.xaxis_index = 0
+        self.xaxis_key = self.xaxis_options[0]
+        self.time_plot = 0.0
+        self.selected_runs = []
