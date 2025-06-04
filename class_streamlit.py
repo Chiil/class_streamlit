@@ -323,7 +323,10 @@ with st.sidebar:
                 x_axis, time_slider = st.columns(2)
                 x_axis.selectbox("X-axis", plot.xaxis_options, index=plot.xaxis_index, key=f"plot_{i}_xaxis")
 
-                time_slider.slider("Time", 0.0, ss.time_max, plot.time_plot, 0.25, key=f"plot_{i}_time")
+                # Prevent the slider to select a value that does not exist.
+                time_max = ss.all_runs[ss[f"plot_{i}_runs"][0]].output.time.values[-1]
+                time_plot = (plot.time_plot[0], min(time_max, plot.time_plot[1]))
+                time_slider.slider("Time", 0.0, time_max, time_plot, 0.25, key=f"plot_{i}_time")
 
                 st.multiselect(
                     "Run to plot",
