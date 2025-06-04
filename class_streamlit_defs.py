@@ -179,9 +179,10 @@ class MixedLayerModel:
 
         # Create the environmental profiles
         theta_env = np.where(z < h, theta, theta + dtheta + (z - h)*self.gammatheta)
+        qt_env = np.zeros_like(z)
 
         # No moisture yet.
-        thetav_env = virtual_temperature(theta_env, 0.0, 0.0)
+        thetav_env = virtual_temperature(theta_env, qt_env, 0.0)
 
         # Compute the pressure profile.
         p_Rdcp = np.zeros_like(z)
@@ -206,23 +207,43 @@ class MixedLayerModel:
         # Initial plume conditions.
         theta_plume[0] = theta + fire_multiplier*self.dtheta_plume
         thetav_plume[0] = theta_plume[0] # No moisture yet.
-        area_plume[0] = 1000.0**2
-        w_plume[0] = 1.0
+        area_plume[0] = 300_000 # 1,000 * 300 from Martin's script for Martorell.
+        w_plume[0] = 0.1
 
-        # Derived initial plume conditions.
         mass_flux_plume[0] = rho_env[0] * area_plume[0] * w_plume[0]
+
+        fac_ent = 0.0025
+        beta = 0.75
+        epsi = fac_ent*beta
+        delt = epsi/beta
+
+        a_w = 1.0
+        b_w = 0.1
+
         entrainment_plume[0] = epsi*mass_flux_plume[0]
         detrainment_plume[0] = 0.0
 
         for i in range(1, len(z)):
             mass_flux_plume[i] = mass_flux_plume[i-1] + (entrainment_plume[i-1] - detrainment_plume[i-1])*dz
-            theta_plume[i] = theta_plume[i-1] - entrainment_plume[i-1]*(theta_plume[i-1] - theta_env[i-1])
-            qt_plume[i] = qt_plume[i-1] - entrainment_plume[i-1]*(qt_plume[i-1] - qt_env[i-1])
+            theta_plume[i] = theta_plume[i-1] - entrainment_plume[i-1]*(theta_plume[i-1] - theta_env[i-1]) / mass_flux_plume[i-1] * dz
+            qt_plume[i] = qt_plume[i-1] - entrainment_plume[i-1]*(qt_plume[i-1] - qt_env[i-1]) / mass_flux_plume[i-1] * dz
 
-            thetav_plume[i] = calc_thetav(theta_plume[i], qt_plume[i], p_env[i], exner_env[i])
-            buoy = g/thetav_env[i] * (thetav_plume[i] - thetav_env[i])
+            thetav_plume[i], _ = calc_thetav(theta_plume[i], qt_plume[i], p_env[i], exner_env[i])
 
-        return theta_plume[::10], z[::10]
+            buoy_m = g/thetav_env[i-1] * (thetav_plume[i-1] - thetav_env[i-1])
+
+            w_plume[i] = (max(0, w_plume[i-1]**2 + 2*(a_w*buoy_m - b_w*epsi*w_plume[i-1]**2) * dz))**.5
+
+            entrainment_plume[i] = epsi * mass_flux_plume[i]
+            detrainment_plume[i] = delt * mass_flux_plume[i]
+
+            area_plume[i] = mass_flux_plume[i] / (rho_env[i] * w_plume[i])
+
+            if (area_plume[i] <= 0) or (w_plume[i] <= 0):
+                for j in range(i, len(z)):
+                    theta_plume[i] = np.nan
+
+        return theta_plume, z
 
 
 class LinePlot:

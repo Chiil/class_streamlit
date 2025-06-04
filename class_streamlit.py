@@ -500,29 +500,72 @@ if ss.main_mode == MainMode.PLOT:
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
 
-                    # Plot the reference state
-                    time_plot = plot.time_plot[0] * 3600
-                    if time_plot <= run.runtime:
-                        idx = round(time_plot / run.dt_output)
+                    # If they are the same, double plotting is not necessary.
+                    if time_plot[0] != time_plot[1]:
 
-                        h = run.output.h.values[idx]
-                        theta = run.output.theta.values[idx]
-                        dtheta = run.output.dtheta.values[idx]
-                        gammatheta = run.gammatheta
+                        # Plot the reference state
+                        time_plot = plot.time_plot[0] * 3600
+                        if time_plot <= run.runtime:
+                            idx = round(time_plot / run.dt_output)
 
-                        x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
-                        z_plot = [0, h, h, h_max]
+                            h = run.output.h.values[idx]
+                            theta = run.output.theta.values[idx]
+                            dtheta = run.output.dtheta.values[idx]
+                            gammatheta = run.gammatheta
 
-                        fig.add_trace(
-                            go.Scatter(
-                                x=x_plot,
-                                y=z_plot,
-                                mode="lines+markers",
-                                showlegend=False,
-                                name=None,
-                                line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
+                            x_plot = [theta, theta, theta + dtheta, theta + dtheta + gammatheta*(h_max-h)]
+                            z_plot = [0, h, h, h_max]
+
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=x_plot,
+                                    y=z_plot,
+                                    mode="lines+markers",
+                                    showlegend=False,
+                                    name=None,
+                                    line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
+                                )
                             )
-                        )
+
+                            ss[f"plot_{i}_fire"].sort()
+
+                            for fire_label in ss[f"plot_{i}_fire"]:
+                                if fire_label == "0.25 x":
+                                    fac_fire = 0.25
+                                    color = "#781c6d"
+                                elif fire_label == "0.5 x":
+                                    fac_fire = 0.5
+                                    color = "#bc3754"
+                                elif fire_label == "1 x":
+                                    fac_fire = 1.0
+                                    color = "#dd513a"
+                                elif fire_label == "2 x":
+                                    fac_fire = 2.0
+                                    color = "#f37819"
+                                elif fire_label == "4 x":
+                                    fac_fire = 4.0
+                                    color = "#fca50a"
+
+                                # x_plot = [theta + dtheta_fire, theta + dtheta_fire]
+                                # z_plot = [0, h_max]
+                                x_plot, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+
+                                fig.add_trace(
+                                    go.Scatter(
+                                        x=x_plot,
+                                        y=z_plot,
+                                        mode="lines",
+                                        showlegend=False,
+                                        line=dict(
+                                            color=color,
+                                            dash="dot",
+                                            width=1.5,
+                                            ),
+                                        # marker=dict(
+                                        #     symbol="cross",
+                                        #     )
+                                    )
+                                )
 
                     # Plot the actual state if available.
                     time_plot = plot.time_plot[1] * 3600
@@ -575,17 +618,17 @@ if ss.main_mode == MainMode.PLOT:
                                 go.Scatter(
                                     x=x_plot,
                                     y=z_plot,
-                                    mode="lines+markers",
+                                    mode="lines",
                                     showlegend=True,
                                     name=f"🔥 {fire_label}",
                                     line=dict(
                                         color=color,
-                                        # dash="dashdot",
-                                        width=1,
+                                        # dash="dot",
+                                        width=1.5,
                                         ),
-                                    marker=dict(
-                                        symbol="cross",
-                                        )
+                                    # marker=dict(
+                                    #     symbol="cross",
+                                    #     )
                                 )
                             )
 
