@@ -366,7 +366,15 @@ if ss.main_mode == MainMode.PLOT:
                 fig = go.Figure()
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
-                    fig.add_trace(go.Scatter(x=run.output[plot.xaxis_key], y=run.output[plot.yaxis_key], mode="lines+markers", name=run_name, line=dict(color=color_cycle[run.color_index % len(color_cycle)])))
+                    fig.add_trace(
+                        go.Scatter(
+                            x=run.output[plot.xaxis_key],
+                            y=run.output[plot.yaxis_key],
+                            mode="lines+markers", name=run_name,
+                            line=dict(color=color_cycle[run.color_index % len(color_cycle)])
+                        )
+                    )
+
                 fig.update_traces(showlegend=True)
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
@@ -543,26 +551,25 @@ if ss.main_mode == MainMode.PLOT:
                         ss[f"plot_{i}_fire"].sort()
 
                         for fire_label in ss[f"plot_{i}_fire"]:
-                            dtheta_fire_ref = run.dtheta_plume
-
                             if fire_label == "0.25 x":
-                                dtheta_fire = 0.25*dtheta_fire_ref
+                                fac_fire = 0.25
                                 color = "#781c6d"
                             elif fire_label == "0.5 x":
-                                dtheta_fire = 0.5*dtheta_fire_ref
+                                fac_fire = 0.5
                                 color = "#bc3754"
                             elif fire_label == "1 x":
-                                dtheta_fire = dtheta_fire_ref
+                                fac_fire = 1.0
                                 color = "#dd513a"
                             elif fire_label == "2 x":
-                                dtheta_fire = 2*dtheta_fire_ref
+                                fac_fire = 2.0
                                 color = "#f37819"
                             elif fire_label == "4 x":
-                                dtheta_fire = 4*dtheta_fire_ref
+                                fac_fire = 4.0
                                 color = "#fca50a"
 
-                            x_plot = [theta + dtheta_fire, theta + dtheta_fire]
-                            z_plot = [0, h_max]
+                            # x_plot = [theta + dtheta_fire, theta + dtheta_fire]
+                            # z_plot = [0, h_max]
+                            x_plot, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
 
                             fig.add_trace(
                                 go.Scatter(

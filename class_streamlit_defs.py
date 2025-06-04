@@ -9,9 +9,71 @@ import pandas as pd
 # defining them, and then Enum ==  and isinstance do not work properly.
 
 
+# Some constants.
+cp = 1005.0
+Lv = 2.5e6
+Rd = 287.04
+Rv = 461.5
+p0 = 1e5
+g = 9.81
+ep = 0.622
+
+
 class MainMode(Enum):
     PLOT = auto()
     EDIT = auto()
+
+
+def virtual_temperature(t, qt, ql):
+    tv = t * (1.0 - (1.0 - Rv/Rd) * qt - Rv/Rd * ql)
+    return tv
+
+
+def esat_liq(t):
+    Tc = t - 273.15
+    Tc = min(Tc, 50) # Avoid excess values
+    esat = 611.21 * np.exp(17.502 * Tc / (240.97 + Tc))
+    return esat
+
+
+def qsat_liq(p, t):
+    qsat = ep * esat_liq(t) / (p - (1.0 - ep) * esat_liq(t))
+    return qsat
+
+
+def dqsatdT_liq(p, t):
+    den = p - esat_liq(t)*(1.0 - ep)
+    dqsatdT = (ep/den + (1.0 - ep)*ep*esat_liq(t)/den**2) * Lv*esat_liq(t) / (Rv*t**2)
+    return dqsatdT
+
+
+# Define a function to compute thetav (do saturation adjustment)
+def calc_thetav(thl, qt, p, exner):
+    # Define the starting values of the adjustment.
+    tl = exner * thl
+    qsat = qsat_liq(p, tl)
+    ql = 0.0
+
+    if qt - qsat <= 0.0:
+        return virtual_temperature(thl, qt, 0.0), qsat
+    
+    # Solve the adjustment problem.
+    niter = 0
+    nitermax = 100
+    tnr = tl
+    tnr_old = 1e9
+
+    while (np.abs(tnr - tnr_old) / tnr_old > 1e-5) and (niter < nitermax):
+        niter +=1 
+        tnr_old = tnr
+        qsat = qsat_liq(p, tnr)
+        f = tnr - tl - Lv/cp*(qt - qsat)
+        f_prime = 1 + Lv/cp*dqsatdT_liq(p, tnr)
+
+        tnr -= f / f_prime
+
+    ql = qt - qsat
+    return virtual_temperature(tnr/exner, qt, ql), qsat
 
 
 class MixedLayerModel:
@@ -102,6 +164,65 @@ class MixedLayerModel:
             "h": output.h,
             "theta": output.theta,
             "dtheta": output.dtheta}) #.set_index("time") do not set index, so time can be queried
+
+
+    def launch_entraining_plume(self, time, fire_multiplier):
+        idx = round(time / self.dt_output)
+
+        theta = self.output.theta[idx]
+        dtheta = self.output.dtheta[idx]
+        h = self.output.h[idx]
+
+        # Create the grid.
+        dz = 10
+        z = np.arange(0, 1.5*self.output.h.values[-1] + dz/2, dz)
+
+        # Create the environmental profiles
+        theta_env = np.where(z < h, theta, theta + dtheta + (z - h)*self.gammatheta)
+
+        # No moisture yet.
+        thetav_env = virtual_temperature(theta_env, 0.0, 0.0)
+
+        # Compute the pressure profile.
+        p_Rdcp = np.zeros_like(z)
+        p_Rdcp[0] = p0**(Rd/cp)
+        for i in range(1, len(z)):
+            p_Rdcp[i] = p_Rdcp[i-1] - g/cp * p0**(Rd/cp) / thetav_env[i-1] * dz
+
+        p_env = p_Rdcp**(cp/Rd)
+        exner_env = (p_env/p0)**(Rd/cp)
+        rho_env = p_env / (Rd * exner_env * thetav_env)
+
+        # Compute the entraining plume ascent.
+        theta_plume = np.zeros_like(z)
+        qt_plume = np.zeros_like(z) # Keep at zero for now.
+        thetav_plume = np.zeros_like(z)
+        area_plume = np.zeros_like(z)
+        w_plume = np.zeros_like(z)
+        mass_flux_plume = np.zeros_like(z)
+        entrainment_plume = np.zeros_like(z)
+        detrainment_plume = np.zeros_like(z)
+
+        # Initial plume conditions.
+        theta_plume[0] = theta + fire_multiplier*self.dtheta_plume
+        thetav_plume[0] = theta_plume[0] # No moisture yet.
+        area_plume[0] = 1000.0**2
+        w_plume[0] = 1.0
+
+        # Derived initial plume conditions.
+        mass_flux_plume[0] = rho_env[0] * area_plume[0] * w_plume[0]
+        entrainment_plume[0] = epsi*mass_flux_plume[0]
+        detrainment_plume[0] = 0.0
+
+        for i in range(1, len(z)):
+            mass_flux_plume[i] = mass_flux_plume[i-1] + (entrainment_plume[i-1] - detrainment_plume[i-1])*dz
+            theta_plume[i] = theta_plume[i-1] - entrainment_plume[i-1]*(theta_plume[i-1] - theta_env[i-1])
+            qt_plume[i] = qt_plume[i-1] - entrainment_plume[i-1]*(qt_plume[i-1] - qt_env[i-1])
+
+            thetav_plume[i] = calc_thetav(theta_plume[i], qt_plume[i], p_env[i], exner_env[i])
+            buoy = g/thetav_env[i] * (thetav_plume[i] - thetav_env[i])
+
+        return theta_plume[::10], z[::10]
 
 
 class LinePlot:
