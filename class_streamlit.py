@@ -346,7 +346,7 @@ with st.sidebar:
 
                 st.pills(
                     "🔥 Fire multiplier",
-                    ["1/4 x", "1/2 x", "1 x", "2 x", "4 x"],
+                    ["0.25 x", "0.5 x", "1 x", "2 x", "4 x"],
                     selection_mode="multi",
                     key=f"plot_{i}_fire")
 
@@ -545,10 +545,10 @@ if ss.main_mode == MainMode.PLOT:
                         for fire_label in ss[f"plot_{i}_fire"]:
                             dtheta_fire_ref = run.dtheta_plume
 
-                            if fire_label == "1/4 x":
+                            if fire_label == "0.25 x":
                                 dtheta_fire = 0.25*dtheta_fire_ref
                                 color = "#781c6d"
-                            elif fire_label == "1/2 x":
+                            elif fire_label == "0.5 x":
                                 dtheta_fire = 0.5*dtheta_fire_ref
                                 color = "#bc3754"
                             elif fire_label == "1 x":
