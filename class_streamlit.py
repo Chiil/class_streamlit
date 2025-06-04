@@ -335,9 +335,8 @@ with st.sidebar:
                 time_slider.slider("Time", 0.0, time_max, time_plot, 0.25, key=f"plot_{i}_time")
 
                 st.multiselect(
-                    "Run to plot",
+                    "Runs to plot",
                     options=list(ss.all_runs.keys()),
-                    max_selections=1,
                     key=f"plot_{i}_runs",
                 )
 
@@ -501,7 +500,7 @@ if ss.main_mode == MainMode.PLOT:
                     run = ss.all_runs[run_name]
 
                     # If they are the same, double plotting is not necessary.
-                    if time_plot[0] != time_plot[1]:
+                    if plot.time_plot[0] != plot.time_plot[1]:
 
                         # Plot the reference state
                         time_plot = plot.time_plot[0] * 3600
