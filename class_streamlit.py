@@ -450,8 +450,8 @@ if ss.main_mode == MainMode.PLOT:
 
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
-                    xaxis_range=(theta_min-0.25, theta_max+0.25),
-                    yaxis_range=(-25, h_max+50),
+                    # xaxis_range=(theta_min-0.25, theta_max+0.25),
+                    # yaxis_range=(-25, h_max+50),
                     xaxis_title=plot.xaxis_key,
                     yaxis_title="z",
                     xaxis_title_font_size=plot_font_size,
@@ -579,8 +579,8 @@ if ss.main_mode == MainMode.PLOT:
 
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
-                    xaxis_range=(theta_min-0.25, theta_max+0.25),
-                    yaxis_range=(-25, h_max+50),
+                    # xaxis_range=(theta_min-0.25, theta_max+0.25),
+                    # yaxis_range=(-25, h_max+50),
                     xaxis_title=plot.xaxis_key,
                     yaxis_title="z",
                     xaxis_title_font_size=plot_font_size,
