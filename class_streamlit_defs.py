@@ -40,6 +40,10 @@ class MixedLayerModel:
         self.wtheta = settings["wtheta"]
         self.gammatheta = settings["gammatheta"]
 
+        # CvH: this should go elsewhere, is separate model.
+        # Save also the fire plume settings in here.
+        self.dtheta_plume = settings["dtheta_plume"]
+
         self.run()
 
 

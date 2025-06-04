@@ -142,6 +142,7 @@ def process_edit_save():
     settings["dtheta"] = ss.settings_temperature_dtheta
     settings["wtheta"] = ss.settings_temperature_wtheta
     settings["gammatheta"] = ss.settings_temperature_gammatheta
+    settings["dtheta_plume"] = ss.settings_fire_atmosphere_dtheta_plume
     ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings, color)
     ss.main_mode = MainMode.PLOT
 
@@ -340,7 +341,7 @@ with st.sidebar:
 
                 st.pills(
                     "🔥 Fire multiplier",
-                    ["0.25 x", "0.5 x", "1 x", "2 x", "4 x"],
+                    ["1/4 x", "1/2 x", "1 x", "2 x", "4 x"],
                     selection_mode="multi",
                     key=f"plot_{i}_fire")
 
@@ -537,12 +538,12 @@ if ss.main_mode == MainMode.PLOT:
                         ss[f"plot_{i}_fire"].sort()
 
                         for fire_label in ss[f"plot_{i}_fire"]:
-                            dtheta_fire_ref = 1.0
+                            dtheta_fire_ref = run.dtheta_plume
 
-                            if fire_label == "0.25 x":
+                            if fire_label == "1/4 x":
                                 dtheta_fire = 0.25*dtheta_fire_ref
                                 color = "#781c6d"
-                            elif fire_label == "0.5 x":
+                            elif fire_label == "1/2 x":
                                 dtheta_fire = 0.5*dtheta_fire_ref
                                 color = "#bc3754"
                             elif fire_label == "1 x":
@@ -618,6 +619,9 @@ elif ss.main_mode == MainMode.EDIT:
         ss.settings_temperature_wtheta = active_run.settings["wtheta"]
     if "settings_temperature_gammatheta" not in ss:
         ss.settings_temperature_gammatheta = active_run.settings["gammatheta"]
+
+    if "settings_fire_atmosphere_dtheta_plume" not in ss:
+        ss.settings_fire_atmosphere_dtheta_plume = active_run.settings["dtheta_plume"]
 
     # Always set the edit key to the selected run.
     ss.run_name_input = ss.all_runs_key
@@ -718,3 +722,21 @@ elif ss.main_mode == MainMode.EDIT:
                         format="%0.4f",
                         key="settings_temperature_gammatheta"
                     )
+
+        with tab_fire:
+            col1, col2 = st.columns(2)
+            # with col1:
+            #     with st.expander("Fire surface", expanded=True):
+            #         pass
+
+            with col1:
+                with st.expander("Atmosphere", expanded=True):
+                    st.number_input(
+                        r"$\Delta \theta_\textrm{plume}$ (K)",
+                        help="Plume excess temperature (K)",
+                        step=0.1,
+                        format="%0.01f",
+                        key="settings_fire_atmosphere_dtheta_plume"
+                    )
+
+
