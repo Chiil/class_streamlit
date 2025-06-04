@@ -561,9 +561,20 @@ if ss.main_mode == MainMode.PLOT:
                                             dash="dot",
                                             width=1.5,
                                             ),
-                                        # marker=dict(
-                                        #     symbol="cross",
-                                        #     )
+                                    )
+                                )
+
+                                fig.add_trace(
+                                    go.Scatter(
+                                        x=(x_plot[0], x_plot[-1]),
+                                        y=(z_plot[0], z_plot[-1]),
+                                        mode="markers",
+                                        showlegend=False,
+                                        name="",
+                                        marker=dict(
+                                            color=color,
+                                            symbol="cross",
+                                            )
                                     )
                                 )
 
@@ -626,9 +637,20 @@ if ss.main_mode == MainMode.PLOT:
                                         # dash="dot",
                                         width=1.5,
                                         ),
-                                    # marker=dict(
-                                    #     symbol="cross",
-                                    #     )
+                                )
+                            )
+
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=(x_plot[0], x_plot[-1]),
+                                    y=(z_plot[0], z_plot[-1]),
+                                    mode="markers",
+                                    showlegend=False,
+                                    name="",
+                                    marker=dict(
+                                        color=color,
+                                        symbol="cross",
+                                        )
                                 )
                             )
 

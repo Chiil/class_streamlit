@@ -240,10 +240,9 @@ class MixedLayerModel:
             area_plume[i] = mass_flux_plume[i] / (rho_env[i] * w_plume[i])
 
             if (area_plume[i] <= 0) or (w_plume[i] <= 0):
-                for j in range(i, len(z)):
-                    theta_plume[i] = np.nan
+                break
 
-        return theta_plume, z
+        return theta_plume[:i], z[:i]
 
 
 class LinePlot:
