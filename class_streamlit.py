@@ -325,7 +325,7 @@ with st.sidebar:
 
                 # Prevent the slider to select a value that does not exist.
                 time_max = ss.all_runs[ss[f"plot_{i}_runs"][0]].output.time.values[-1]
-                time_plot = (plot.time_plot[0], min(time_max, plot.time_plot[1]))
+                time_plot = (0.0 if plot.time_plot[0] > time_max else plot.time_plot[0], min(time_max, plot.time_plot[1]))
                 time_slider.slider("Time", 0.0, time_max, time_plot, 0.25, key=f"plot_{i}_time")
 
                 st.multiselect(
