@@ -547,34 +547,25 @@ if ss.main_mode == MainMode.PLOT:
                                     fac_fire = 4.0
                                     color = "#fca50a"
 
-                                # x_plot = [theta + dtheta_fire, theta + dtheta_fire]
-                                # z_plot = [0, h_max]
                                 x_plot, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                marker_sizes = [0] * len(z_plot)
+                                marker_sizes[0], marker_sizes[-1] = 5, 5
 
                                 fig.add_trace(
                                     go.Scatter(
                                         x=x_plot,
                                         y=z_plot,
-                                        mode="lines",
+                                        mode="lines+markers",
                                         showlegend=False,
                                         line=dict(
                                             color=color,
                                             dash="dot",
                                             width=1.5,
                                             ),
-                                    )
-                                )
-
-                                fig.add_trace(
-                                    go.Scatter(
-                                        x=(x_plot[0], x_plot[-1]),
-                                        y=(z_plot[0], z_plot[-1]),
-                                        mode="markers",
-                                        showlegend=False,
-                                        name="",
                                         marker=dict(
                                             color=color,
                                             symbol="cross",
+                                            size=marker_sizes,
                                             )
                                     )
                                 )
@@ -622,35 +613,25 @@ if ss.main_mode == MainMode.PLOT:
                                 fac_fire = 4.0
                                 color = "#fca50a"
 
-                            # x_plot = [theta + dtheta_fire, theta + dtheta_fire]
-                            # z_plot = [0, h_max]
                             x_plot, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                            marker_sizes = [0] * len(z_plot)
+                            marker_sizes[0], marker_sizes[-1] = 5, 5
 
                             fig.add_trace(
                                 go.Scatter(
                                     x=x_plot,
                                     y=z_plot,
-                                    mode="lines",
+                                    mode="lines+markers",
                                     showlegend=True,
                                     name=f"🔥 {fire_label}",
                                     line=dict(
                                         color=color,
-                                        # dash="dot",
                                         width=1.5,
                                         ),
-                                )
-                            )
-
-                            fig.add_trace(
-                                go.Scatter(
-                                    x=(x_plot[0], x_plot[-1]),
-                                    y=(z_plot[0], z_plot[-1]),
-                                    mode="markers",
-                                    showlegend=False,
-                                    name="",
                                     marker=dict(
                                         color=color,
                                         symbol="cross",
+                                        size=marker_sizes,
                                         )
                                 )
                             )
