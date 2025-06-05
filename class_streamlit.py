@@ -31,6 +31,8 @@ if "default_name" not in ss:
             url_settings["wtheta"] = float(st.query_params["wtheta"])
             url_settings["gammatheta"] = float(st.query_params["gammatheta"])
 
+            url_settings["dtheta_plume"] = float(st.query_params["dtheta_plume"])
+
             # Input is valid, overwrite the defaults.
             ss.default_name = str(st.query_params["run_name"])
             ss.default_settings = url_settings

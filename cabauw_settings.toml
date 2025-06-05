@@ -10,3 +10,5 @@ theta = 285.0
 dtheta = 4.0
 wtheta = 0.15
 gammatheta = 0.006
+
+dtheta_plume = 0.2
