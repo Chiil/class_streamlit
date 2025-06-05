@@ -237,9 +237,10 @@ class MixedLayerModel:
             entrainment_plume[i] = epsi * mass_flux_plume[i]
             detrainment_plume[i] = delt * mass_flux_plume[i]
 
-            area_plume[i] = mass_flux_plume[i] / (rho_env[i] * w_plume[i])
+            w_eps = 1e-6
+            area_plume[i] = mass_flux_plume[i] / (rho_env[i] * (w_plume[i] + w_eps))
 
-            if (area_plume[i] <= 0) or (w_plume[i] <= 0):
+            if (area_plume[i] <= 0) or (w_plume[i] < w_eps):
                 break
 
         return theta_plume[:i], z[:i]
