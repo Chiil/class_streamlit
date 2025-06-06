@@ -193,8 +193,8 @@ class MixedLayerModel:
         theta = self.output.theta[idx]
         dtheta = self.output.dtheta[idx]
 
-        q = self.output.q[idx] * 1e-3
-        dq = self.output.dq[idx] * 1e-3
+        q = self.output.q[idx]
+        dq = self.output.dq[idx]
 
         h = self.output.h[idx]
 
@@ -268,7 +268,7 @@ class MixedLayerModel:
             if (area_plume[i] <= 0) or (w_plume[i] < w_eps):
                 break
 
-        return theta_plume[:i], q_plume[:i] * 1e3, thetav_plume[:i], z[:i]
+        return theta_plume[:i], q_plume[:i], thetav_plume[:i], z[:i]
 
 
 class LinePlot:
@@ -284,7 +284,7 @@ class LinePlot:
 
 class ProfilePlot:
     def __init__(self):
-        self.xaxis_options = ["theta"]
+        self.xaxis_options = ["theta", "q"]
         self.xaxis_index = 0
         self.xaxis_key = self.xaxis_options[0]
         self.time_plot = (0.0, 1.0)
