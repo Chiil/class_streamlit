@@ -566,7 +566,7 @@ if ss.main_mode == MainMode.PLOT:
                                     fac_fire = 4.0
                                     color = "#fca50a"
 
-                                x_plot, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                x_plot, _, _, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
                                 marker_sizes = [0] * len(z_plot)
                                 marker_sizes[0], marker_sizes[-1] = 5, 5
 
@@ -632,7 +632,7 @@ if ss.main_mode == MainMode.PLOT:
                                 fac_fire = 4.0
                                 color = "#fca50a"
 
-                            x_plot, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                            x_plot, _, _, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
                             marker_sizes = [0] * len(z_plot)
                             marker_sizes[0], marker_sizes[-1] = 5, 5
 

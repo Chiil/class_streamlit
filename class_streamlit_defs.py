@@ -102,32 +102,44 @@ class MixedLayerModel:
         self.wtheta = settings["wtheta"]
         self.gammatheta = settings["gammatheta"]
 
+        self.q = settings["q"]
+        self.dq = settings["dq"]
+        self.wq = settings["wq"]
+        self.gammaq = settings["gammaq"]
+
         # CvH: this should go elsewhere, is separate model.
         # Save also the fire plume settings in here.
         self.dtheta_plume = settings["dtheta_plume"]
+        self.dq_plume = settings["dq_plume"]
 
         self.run()
 
 
     def step(self):
         # First, compute the growth.
-        # CvH, improve later, no moisture now
         wthetav = self.wtheta
         thetav = self.theta
         dthetav = self.dtheta
+
         we = self.beta * wthetav / dthetav
         ws = - self.h * self.div
 
         # Compute the tendencies.
         dhdt = we + ws
+
         dthetadt = (self.wtheta + we * self.dtheta) / self.h
         ddthetadt = we * self.gammatheta - dthetadt
+
+        dqdt = (self.wq + we * self.dq) / self.h
+        ddqdt = we * self.gammaq - dqdt
 
         # Integrate the variables.
         self.time += self.dt
         self.h += self.dt * dhdt
         self.theta += self.dt * dthetadt
         self.dtheta += self.dt * ddthetadt
+        self.q += self.dt * dqdt
+        self.dq += self.dt * ddqdt
 
 
     def run(self):
@@ -143,11 +155,15 @@ class MixedLayerModel:
         output.h = np.nan * np.zeros(nt_output)
         output.theta = np.nan * np.zeros(nt_output)
         output.dtheta = np.nan * np.zeros(nt_output)
+        output.q = np.nan * np.zeros(nt_output)
+        output.dq = np.nan * np.zeros(nt_output)
 
         output.time[0] = self.time
         output.h[0] = self.h
         output.theta[0] = self.theta
         output.dtheta[0] = self.dtheta
+        output.q[0] = self.q
+        output.dq[0] = self.dq
 
         for i in range(1, nt+1):
             self.step()
@@ -158,12 +174,17 @@ class MixedLayerModel:
                 output.h[ii] = self.h
                 output.theta[ii] = self.theta
                 output.dtheta[ii] = self.dtheta
+                output.q[ii] = self.q
+                output.dq[ii] = self.dq
 
         self.output = pd.DataFrame(data = {
             "time": output.time,
             "h": output.h,
             "theta": output.theta,
-            "dtheta": output.dtheta}) #.set_index("time") do not set index, so time can be queried
+            "dtheta": output.dtheta,
+            "q": output.q,
+            "dq": output.dq},
+        )
 
 
     def launch_entraining_plume(self, time, fire_multiplier):
@@ -171,6 +192,10 @@ class MixedLayerModel:
 
         theta = self.output.theta[idx]
         dtheta = self.output.dtheta[idx]
+
+        q = self.output.q[idx] * 1e-3
+        dq = self.output.dq[idx] * 1e-3
+
         h = self.output.h[idx]
 
         # Create the grid.
@@ -179,10 +204,10 @@ class MixedLayerModel:
 
         # Create the environmental profiles
         theta_env = np.where(z < h, theta, theta + dtheta + (z - h)*self.gammatheta)
-        qt_env = np.zeros_like(z)
+        q_env = np.where(z < h, q, q + dq + (z - h)*self.gammaq)
 
         # No moisture yet.
-        thetav_env = virtual_temperature(theta_env, qt_env, 0.0)
+        thetav_env = virtual_temperature(theta_env, q_env, 0.0)
 
         # Compute the pressure profile.
         p_Rdcp = np.zeros_like(z)
@@ -196,7 +221,7 @@ class MixedLayerModel:
 
         # Compute the entraining plume ascent.
         theta_plume = np.zeros_like(z)
-        qt_plume = np.zeros_like(z) # Keep at zero for now.
+        q_plume = np.zeros_like(z) # Keep at zero for now.
         thetav_plume = np.zeros_like(z)
         area_plume = np.zeros_like(z)
         w_plume = np.zeros_like(z)
@@ -226,9 +251,9 @@ class MixedLayerModel:
         for i in range(1, len(z)):
             mass_flux_plume[i] = mass_flux_plume[i-1] + (entrainment_plume[i-1] - detrainment_plume[i-1])*dz
             theta_plume[i] = theta_plume[i-1] - entrainment_plume[i-1]*(theta_plume[i-1] - theta_env[i-1]) / mass_flux_plume[i-1] * dz
-            qt_plume[i] = qt_plume[i-1] - entrainment_plume[i-1]*(qt_plume[i-1] - qt_env[i-1]) / mass_flux_plume[i-1] * dz
+            q_plume[i] = q_plume[i-1] - entrainment_plume[i-1]*(q_plume[i-1] - q_env[i-1]) / mass_flux_plume[i-1] * dz
 
-            thetav_plume[i], _ = calc_thetav(theta_plume[i], qt_plume[i], p_env[i], exner_env[i])
+            thetav_plume[i], _ = calc_thetav(theta_plume[i], q_plume[i], p_env[i], exner_env[i])
 
             buoy_m = g/thetav_env[i-1] * (thetav_plume[i-1] - thetav_env[i-1])
 
@@ -243,7 +268,7 @@ class MixedLayerModel:
             if (area_plume[i] <= 0) or (w_plume[i] < w_eps):
                 break
 
-        return theta_plume[:i], z[:i]
+        return theta_plume[:i], q_plume[:i] * 1e3, thetav_plume[:i], z[:i]
 
 
 class LinePlot:
@@ -268,7 +293,7 @@ class ProfilePlot:
 
 class PlumePlot:
     def __init__(self):
-        self.xaxis_options = ["theta"]
+        self.xaxis_options = ["theta", "q", "thetav"]
         self.xaxis_index = 0
         self.xaxis_key = self.xaxis_options[0]
         self.time_plot = (0.0, 1.0)
