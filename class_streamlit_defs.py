@@ -249,7 +249,7 @@ class MixedLayerModel:
 class LinePlot:
     def __init__(self):
         self.xaxis_options = ["time"]
-        self.yaxis_options = ["h", "theta", "dtheta"]
+        self.yaxis_options = ["h", "theta", "dtheta", "q", "dq"]
         self.xaxis_index = 0
         self.yaxis_index = 0
         self.xaxis_key = self.xaxis_options[0]

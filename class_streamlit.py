@@ -23,15 +23,23 @@ if "default_name" not in ss:
             url_settings["runtime"] = float(st.query_params["runtime"])
             url_settings["dt"] = float(st.query_params["dt"])
             url_settings["dt_output"] = float(st.query_params["dt_output"])
+
             url_settings["h"] = float(st.query_params["h"])
             url_settings["beta"] = float(st.query_params["beta"])
             url_settings["div"] = float(st.query_params["div"])
+
             url_settings["theta"] = float(st.query_params["theta"])
             url_settings["dtheta"] = float(st.query_params["dtheta"])
             url_settings["wtheta"] = float(st.query_params["wtheta"])
             url_settings["gammatheta"] = float(st.query_params["gammatheta"])
 
+            url_settings["q"] = float(st.query_params["q"])
+            url_settings["dq"] = float(st.query_params["dq"])
+            url_settings["wq"] = float(st.query_params["wq"])
+            url_settings["gammaq"] = float(st.query_params["gammaq"])
+
             url_settings["dtheta_plume"] = float(st.query_params["dtheta_plume"])
+            url_settings["dq_plume"] = float(st.query_params["dq_plume"])
 
             # Input is valid, overwrite the defaults.
             ss.default_name = str(st.query_params["run_name"])
@@ -137,14 +145,25 @@ def process_edit_save():
     settings["runtime"] = ss.settings_general_runtime
     settings["dt"] = ss.settings_general_dt
     settings["dt_output"] = ss.settings_general_dt_output
+
     settings["h"] = ss.settings_mixedlayer_h
     settings["beta"] = ss.settings_mixedlayer_beta
     settings["div"] = ss.settings_mixedlayer_div
+
     settings["theta"] = ss.settings_temperature_theta
     settings["dtheta"] = ss.settings_temperature_dtheta
     settings["wtheta"] = ss.settings_temperature_wtheta
     settings["gammatheta"] = ss.settings_temperature_gammatheta
+
+    # Convert back from g kg-1 to kg kg-1
+    settings["q"] = ss.settings_moisture_q * 1e-3
+    settings["dq"] = ss.settings_moisture_dq * 1e-3
+    settings["wq"] = ss.settings_moisture_wq * 1e-3
+    settings["gammaq"] = ss.settings_moisture_gammaq * 1e-3
+
     settings["dtheta_plume"] = ss.settings_fire_atmosphere_dtheta_plume
+    settings["dq_plume"] = ss.settings_fire_atmosphere_dq_plume * 1e-3
+
     ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings, color)
     ss.main_mode = MainMode.PLOT
 
@@ -679,8 +698,19 @@ elif ss.main_mode == MainMode.EDIT:
     if "settings_temperature_gammatheta" not in ss:
         ss.settings_temperature_gammatheta = active_run.settings["gammatheta"]
 
+    if "settings_moisture_q" not in ss:
+        ss.settings_moisture_q = active_run.settings["q"] * 1e3
+    if "settings_moisture_dq" not in ss:
+        ss.settings_moisture_dq = active_run.settings["dq"] * 1e3
+    if "settings_temperature_wq" not in ss:
+        ss.settings_moisture_wq = active_run.settings["wq"] * 1e3
+    if "settings_temperature_gammaq" not in ss:
+        ss.settings_moisture_gammaq = active_run.settings["gammaq"] * 1e3
+
     if "settings_fire_atmosphere_dtheta_plume" not in ss:
         ss.settings_fire_atmosphere_dtheta_plume = active_run.settings["dtheta_plume"]
+    if "settings_fire_atmosphere_dq_plume" not in ss:
+        ss.settings_fire_atmosphere_dq_plume = active_run.settings["dq_plume"] * 1e3
 
     # Always set the edit key to the selected run.
     ss.run_name_input = ss.all_runs_key
@@ -782,6 +812,40 @@ elif ss.main_mode == MainMode.EDIT:
                         key="settings_temperature_gammatheta"
                     )
 
+                with st.expander("Moisture", expanded=True):
+                    st.number_input(
+                        r"$q$ (g kg-1)",
+                        help="specific humidity (g kg-1)",
+                        step=0.5,
+                        format="%0.1f",
+                        key="settings_moisture_q"
+                    )
+
+                    st.number_input(
+                        r"$\Delta q$ (g kg-1)",
+                        help="specific humidity jump (g kg-1)",
+                        step=0.5,
+                        format="%0.2f",
+                        key="settings_moisture_dq"
+                    )
+
+                    st.number_input(
+                        r"$\overline{w^\prime q^\prime}_s$ (g kg-1 m s-1)",
+                        help="specific humidity surface flux (g kg-1 m s-1)",
+                        step=0.01,
+                        format="%0.2f",
+                        key="settings_moisture_wq"
+                    )
+
+                    st.number_input(
+                        r"$\gamma_\theta$ (g kg-1  m-1)",
+                        help="specific humidity lapse rate (g kg-1 m-1)",
+                        step=0.0005,
+                        format="%0.4f",
+                        key="settings_moisture_gammaq"
+                    )
+
+
         with tab_fire:
             col1, col2 = st.columns(2)
             # with col1:
@@ -798,4 +862,10 @@ elif ss.main_mode == MainMode.EDIT:
                         key="settings_fire_atmosphere_dtheta_plume"
                     )
 
-
+                    st.number_input(
+                        r"$\Delta q_\textrm{plume}$ (g kg-1)",
+                        help="Plume excess specific humidity (g kg-1)",
+                        step=0.1,
+                        format="%0.01f",
+                        key="settings_fire_atmosphere_dq_plume"
+                    )
