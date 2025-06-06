@@ -629,13 +629,14 @@ if ss.main_mode == MainMode.PLOT:
                                     color = "#fca50a"
 
                                 if plot.xaxis_key == "theta":
-                                    x_plot, _, _, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                    x_plot, _, _, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
                                 elif plot.xaxis_key == "q":
-                                    _, x_plot, _, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                    _, x_plot, _, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
                                 elif plot.xaxis_key == "thetav":
-                                    _, _, x_plot, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                    _, _, x_plot, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
 
-                                marker_sizes = [0] * len(z_plot)
+                                marker_sizes = np.zeros_like(z_plot)
+                                marker_sizes[::5] = np.where(type_plume[::5] > 0, 5, marker_sizes[::5])
                                 marker_sizes[0], marker_sizes[-1] = 5, 5
 
                                 fig.add_trace(
@@ -651,7 +652,7 @@ if ss.main_mode == MainMode.PLOT:
                                             ),
                                         marker=dict(
                                             color=color,
-                                            symbol="cross",
+                                            # symbol="cross",
                                             size=marker_sizes,
                                             )
                                     )
@@ -725,13 +726,14 @@ if ss.main_mode == MainMode.PLOT:
                                 color = "#fca50a"
 
                             if plot.xaxis_key == "theta":
-                                x_plot, _, _, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                x_plot, _, _, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
                             elif plot.xaxis_key == "q":
-                                _, x_plot, _, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                _, x_plot, _, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
                             elif plot.xaxis_key == "thetav":
-                                _, _, x_plot, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                _, _, x_plot, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
 
-                            marker_sizes = [0] * len(z_plot)
+                            marker_sizes = np.zeros_like(z_plot)
+                            marker_sizes[::5] = np.where(type_plume[::5] > 0, 5, marker_sizes[::5])
                             marker_sizes[0], marker_sizes[-1] = 5, 5
 
                             fig.add_trace(
@@ -747,7 +749,7 @@ if ss.main_mode == MainMode.PLOT:
                                         ),
                                     marker=dict(
                                         color=color,
-                                        symbol="cross",
+                                        # symbol="cross",
                                         size=marker_sizes,
                                         )
                                 )

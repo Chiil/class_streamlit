@@ -54,7 +54,7 @@ def calc_thetav(thl, qt, p, exner):
     ql = 0.0
 
     if qt - qsat <= 0.0:
-        return virtual_temperature(thl, qt, 0.0), qsat
+        return virtual_temperature(thl, qt, 0.0), ql
     
     # Solve the adjustment problem.
     niter = 0
@@ -72,7 +72,7 @@ def calc_thetav(thl, qt, p, exner):
         tnr -= f / f_prime
 
     ql = qt - qsat
-    return virtual_temperature(tnr/exner, qt, ql), qsat
+    return virtual_temperature(tnr/exner, qt, ql), ql
 
 
 class MixedLayerModel:
@@ -234,6 +234,7 @@ class MixedLayerModel:
         mass_flux_plume = np.zeros_like(z)
         entrainment_plume = np.zeros_like(z)
         detrainment_plume = np.zeros_like(z)
+        type_plume = np.zeros_like(z, dtype=np.int8)
 
         # Initial plume conditions.
         theta_plume[0] = theta + fire_multiplier*self.dtheta_plume
@@ -260,7 +261,10 @@ class MixedLayerModel:
             theta_plume[i] = theta_plume[i-1] - entrainment_plume[i-1]*(theta_plume[i-1] - theta_env[i-1]) / mass_flux_plume[i-1] * dz
             q_plume[i] = q_plume[i-1] - entrainment_plume[i-1]*(q_plume[i-1] - q_env[i-1]) / mass_flux_plume[i-1] * dz
 
-            thetav_plume[i], _ = calc_thetav(theta_plume[i], q_plume[i], p_env[i], exner_env[i])
+            thetav_plume[i], ql = calc_thetav(theta_plume[i], q_plume[i], p_env[i], exner_env[i])
+
+            if ql > 0:
+                type_plume[i] = 1
 
             buoy_m = g/thetav_env[i-1] * (thetav_plume[i-1] - thetav_env[i-1])
 
@@ -275,7 +279,7 @@ class MixedLayerModel:
             if (area_plume[i] <= 0) or (w_plume[i] < w_eps):
                 break
 
-        return theta_plume[:i], q_plume[:i], thetav_plume[:i], z[:i]
+        return theta_plume[:i], q_plume[:i], thetav_plume[:i], type_plume[:i], z[:i]
 
 
 class LinePlot:
