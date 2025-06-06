@@ -1,4 +1,3 @@
-import copy
 from enum import Enum, auto
 import numpy as np
 import pandas as pd
@@ -157,6 +156,8 @@ class MixedLayerModel:
         output.dtheta = np.nan * np.zeros(nt_output)
         output.q = np.nan * np.zeros(nt_output)
         output.dq = np.nan * np.zeros(nt_output)
+        output.thetav = np.nan * np.zeros(nt_output)
+        output.dthetav = np.nan * np.zeros(nt_output)
 
         output.time[0] = self.time
         output.h[0] = self.h
@@ -164,6 +165,8 @@ class MixedLayerModel:
         output.dtheta[0] = self.dtheta
         output.q[0] = self.q
         output.dq[0] = self.dq
+        output.thetav[0] = virtual_temperature(self.theta, self.q, 0.0)
+        output.dthetav[0] = virtual_temperature(self.theta + self.dtheta, self.q + self.dq, 0.0) - output.thetav[0]
 
         for i in range(1, nt+1):
             self.step()
@@ -176,6 +179,8 @@ class MixedLayerModel:
                 output.dtheta[ii] = self.dtheta
                 output.q[ii] = self.q
                 output.dq[ii] = self.dq
+                output.thetav[ii] = virtual_temperature(self.theta, self.q, 0.0)
+                output.dthetav[ii] = virtual_temperature(self.theta + self.dtheta, self.q + self.dq, 0.0) - output.thetav[ii]
 
         self.output = pd.DataFrame(data = {
             "time": output.time,
@@ -183,7 +188,10 @@ class MixedLayerModel:
             "theta": output.theta,
             "dtheta": output.dtheta,
             "q": output.q,
-            "dq": output.dq},
+            "dq": output.dq,
+            "thetav": output.thetav,
+            "dthetav": output.dthetav,
+            },
         )
 
 
@@ -273,7 +281,7 @@ class MixedLayerModel:
 class LinePlot:
     def __init__(self):
         self.xaxis_options = ["time"]
-        self.yaxis_options = ["h", "theta", "dtheta", "q", "dq"]
+        self.yaxis_options = ["h", "theta", "dtheta", "q", "dq", "thetav", "dthetav"]
         self.xaxis_index = 0
         self.yaxis_index = 0
         self.xaxis_key = self.xaxis_options[0]

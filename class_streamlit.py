@@ -452,6 +452,22 @@ if ss.main_mode == MainMode.PLOT:
                             gammaq = run.gammaq
                             x_plot = [q, q, q + dq, q + dq + gammaq*(h_max-h)]
 
+                        elif plot.xaxis_key == "thetav":
+                            theta = run.output.theta.values[idx]
+                            dtheta = run.output.dtheta.values[idx]
+                            gammatheta = run.gammatheta
+
+                            q = run.output.q.values[idx]
+                            dq = run.output.dq.values[idx]
+                            gammaq = run.gammaq
+
+                            x_plot = [
+                                virtual_temperature(theta, q, 0.0),
+                                virtual_temperature(theta, q, 0.0),
+                                virtual_temperature(theta + dtheta, q + dq, 0.0),
+                                virtual_temperature(theta + dtheta + gammatheta*(h_max-h), q + dq + gammaq*(h_max-h), 0.0)
+                            ]
+
                         z_plot = [0, h, h, h_max]
 
                         fig.add_trace(
@@ -483,6 +499,22 @@ if ss.main_mode == MainMode.PLOT:
                             dq = run.output.dq.values[idx]
                             gammaq = run.gammaq
                             x_plot = [q, q, q + dq, q + dq + gammaq*(h_max-h)]
+
+                        elif plot.xaxis_key == "thetav":
+                            theta = run.output.theta.values[idx]
+                            dtheta = run.output.dtheta.values[idx]
+                            gammatheta = run.gammatheta
+
+                            q = run.output.q.values[idx]
+                            dq = run.output.dq.values[idx]
+                            gammaq = run.gammaq
+
+                            x_plot = [
+                                virtual_temperature(theta, q, 0.0),
+                                virtual_temperature(theta, q, 0.0),
+                                virtual_temperature(theta + dtheta, q + dq, 0.0),
+                                virtual_temperature(theta + dtheta + gammatheta*(h_max-h), q + dq + gammaq*(h_max-h), 0.0)
+                            ]
 
                         z_plot = [0, h, h, h_max]
 
@@ -547,6 +579,22 @@ if ss.main_mode == MainMode.PLOT:
                                 dq = run.output.dq.values[idx]
                                 gammaq = run.gammaq
                                 x_plot = [q, q, q + dq, q + dq + gammaq*(h_max-h)]
+
+                            elif plot.xaxis_key == "thetav":
+                                theta = run.output.theta.values[idx]
+                                dtheta = run.output.dtheta.values[idx]
+                                gammatheta = run.gammatheta
+
+                                q = run.output.q.values[idx]
+                                dq = run.output.dq.values[idx]
+                                gammaq = run.gammaq
+
+                                x_plot = [
+                                    virtual_temperature(theta, q, 0.0),
+                                    virtual_temperature(theta, q, 0.0),
+                                    virtual_temperature(theta + dtheta, q + dq, 0.0),
+                                    virtual_temperature(theta + dtheta + gammatheta*(h_max-h), q + dq + gammaq*(h_max-h), 0.0)
+                                ]
 
                             z_plot = [0, h, h, h_max]
 
@@ -627,6 +675,22 @@ if ss.main_mode == MainMode.PLOT:
                             dq = run.output.dq.values[idx]
                             gammaq = run.gammaq
                             x_plot = [q, q, q + dq, q + dq + gammaq*(h_max-h)]
+
+                        elif plot.xaxis_key == "thetav":
+                            theta = run.output.theta.values[idx]
+                            dtheta = run.output.dtheta.values[idx]
+                            gammatheta = run.gammatheta
+
+                            q = run.output.q.values[idx]
+                            dq = run.output.dq.values[idx]
+                            gammaq = run.gammaq
+
+                            x_plot = [
+                                virtual_temperature(theta, q, 0.0),
+                                virtual_temperature(theta, q, 0.0),
+                                virtual_temperature(theta + dtheta, q + dq, 0.0),
+                                virtual_temperature(theta + dtheta + gammatheta*(h_max-h), q + dq + gammaq*(h_max-h), 0.0)
+                            ]
 
                         z_plot = [0, h, h, h_max]
 
