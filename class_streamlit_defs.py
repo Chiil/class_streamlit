@@ -115,10 +115,10 @@ class MixedLayerModel:
 
 
     def step(self):
-        # First, compute the growth.
-        wthetav = self.wtheta
-        thetav = self.theta
-        dthetav = self.dtheta
+        # First, compute the growth, assume no condensation in virtual temp calculations.
+        wthetav = self.wtheta * (1.0 + (Rv/Rd - 1.0) * self.q) + (Rv/Rd - 1.0) * self.theta * self.wq
+        thetav = virtual_temperature(self.theta, self.q, 0.0)
+        dthetav = virtual_temperature(self.theta + self.dtheta, self.q + self.dq, 0.0) - thetav
 
         we = self.beta * wthetav / dthetav
         ws = - self.h * self.div
