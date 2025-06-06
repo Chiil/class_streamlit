@@ -11,4 +11,10 @@ dtheta = 2.0
 wtheta = 0.1
 gammatheta = 0.003
 
+q = 0.005
+dq = -0.001
+wq = 8e-5
+gammaq = 0.0
+
 dtheta_plume = 0.2
+dq_plume = 0.001
