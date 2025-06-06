@@ -205,8 +205,6 @@ class MixedLayerModel:
         # Create the environmental profiles
         theta_env = np.where(z < h, theta, theta + dtheta + (z - h)*self.gammatheta)
         q_env = np.where(z < h, q, q + dq + (z - h)*self.gammaq)
-
-        # No moisture yet.
         thetav_env = virtual_temperature(theta_env, q_env, 0.0)
 
         # Compute the pressure profile.
@@ -221,7 +219,7 @@ class MixedLayerModel:
 
         # Compute the entraining plume ascent.
         theta_plume = np.zeros_like(z)
-        q_plume = np.zeros_like(z) # Keep at zero for now.
+        q_plume = np.zeros_like(z)
         thetav_plume = np.zeros_like(z)
         area_plume = np.zeros_like(z)
         w_plume = np.zeros_like(z)
@@ -231,7 +229,8 @@ class MixedLayerModel:
 
         # Initial plume conditions.
         theta_plume[0] = theta + fire_multiplier*self.dtheta_plume
-        thetav_plume[0] = theta_plume[0] # No moisture yet.
+        q_plume[0] = q + fire_multiplier*self.dq_plume
+        thetav_plume[0], _ = calc_thetav(theta_plume[0], q_plume[0], p_env[0], exner_env[0])
         area_plume[0] = 300_000 # 1,000 * 300 from Martin's script for Martorell.
         w_plume[0] = 0.1
 
