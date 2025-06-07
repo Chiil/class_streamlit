@@ -552,7 +552,7 @@ if ss.main_mode == MainMode.PLOT:
                     run = ss.all_runs[run_name]
                     h_max = max(h_max, run.output.h.max())
 
-                h_max *= 1.5
+                h_max *= 2.0
 
                 # Plot the profiles.
                 for run_name in plot.selected_runs:

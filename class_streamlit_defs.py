@@ -224,13 +224,15 @@ class MixedLayerModel:
         p_env[0] = p_Rdcp[0]**(cp/Rd)
         exner_env[0] = (p_env[0]/p0)**(Rd/cp)
 
-        thetav_env[0] = virtual_temperature(theta_env[0], q_env[0], 0.0)
+        thetav_env[0], ql = calc_thetav(theta_env[0], q_env[0], p_env[0], exner_env[0])
 
         for i in range(1, len(z)):
             p_Rdcp[i] = p_Rdcp[i-1] - g/cp * p0**(Rd/cp) / thetav_env[i-1] * dz
             p_env[i] = p_Rdcp[i]**(cp/Rd)
             exner_env[i] = (p_env[i]/p0)**(Rd/cp)
-            thetav_env[i] = virtual_temperature(theta_env[i], q_env[i], 0.0)
+            thetav_env[i], ql = calc_thetav(theta_env[i], q_env[i], p_env[i], exner_env[i])
+            if ql > 0:
+                print(f"Warning, environmental profile is saturated at z = {z[i]} m")
 
         rho_env = p_env / (Rd * exner_env * thetav_env)
 
