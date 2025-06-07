@@ -914,7 +914,7 @@ elif ss.main_mode == MainMode.EDIT:
                     st.number_input(
                         r"$q$ (kg kg-1)",
                         help="specific humidity (kg kg-1)",
-                        step=0.0001,
+                        step=0.0005,
                         format="%0.4f",
                         key="settings_moisture_q"
                     )
@@ -922,7 +922,7 @@ elif ss.main_mode == MainMode.EDIT:
                     st.number_input(
                         r"$\Delta q$ (kg kg-1)",
                         help="specific humidity jump (kg kg-1)",
-                        step=0.0001,
+                        step=0.0005,
                         format="%0.4f",
                         key="settings_moisture_dq"
                     )
@@ -955,7 +955,7 @@ elif ss.main_mode == MainMode.EDIT:
                     st.number_input(
                         r"$\Delta \theta_\textrm{plume}$ (K)",
                         help="Plume excess temperature (K)",
-                        step=0.1,
+                        step=0.2,
                         format="%0.01f",
                         key="settings_fire_atmosphere_dtheta_plume"
                     )
@@ -963,7 +963,7 @@ elif ss.main_mode == MainMode.EDIT:
                     st.number_input(
                         r"$\Delta q_\textrm{plume}$ (kg kg-1)",
                         help="Plume excess specific humidity (kg kg-1)",
-                        step=0.0001,
-                        format="%0.0001f",
+                        step=0.0005,
+                        format="%0.4f",
                         key="settings_fire_atmosphere_dq_plume"
                     )

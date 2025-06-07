@@ -208,7 +208,7 @@ class MixedLayerModel:
 
         # Create the grid.
         dz = 10
-        z = np.arange(0, 1.5*self.output.h.values[-1] + dz/2, dz)
+        z = np.arange(0, 2.0*self.output.h.values[-1] + dz/2, dz) # Extend the grid to twice the max ABL height.
 
         # Create the environmental profiles
         theta_env = np.where(z < h, theta, theta + dtheta + (z - h)*self.gammatheta)
