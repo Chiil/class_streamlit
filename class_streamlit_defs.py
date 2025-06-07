@@ -55,7 +55,7 @@ def calc_thetav(thl, qt, p, exner):
 
     if qt - qsat <= 0.0:
         return virtual_temperature(thl, qt, 0.0), ql
-    
+
     # Solve the adjustment problem.
     niter = 0
     nitermax = 100
@@ -63,7 +63,7 @@ def calc_thetav(thl, qt, p, exner):
     tnr_old = 1e9
 
     while (np.abs(tnr - tnr_old) / tnr_old > 1e-5) and (niter < nitermax):
-        niter +=1 
+        niter +=1
         tnr_old = tnr
         qsat = qsat_liq(p, tnr)
         f = tnr - tl - Lv/cp*(qt - qsat)
@@ -213,16 +213,25 @@ class MixedLayerModel:
         # Create the environmental profiles
         theta_env = np.where(z < h, theta, theta + dtheta + (z - h)*self.gammatheta)
         q_env = np.where(z < h, q, q + dq + (z - h)*self.gammaq)
-        thetav_env = virtual_temperature(theta_env, q_env, 0.0)
+
+        thetav_env = np.zeros_like(z)
+        p_env = np.zeros_like(z)
+        exner_env = np.zeros_like(z)
 
         # Compute the pressure profile.
         p_Rdcp = np.zeros_like(z)
         p_Rdcp[0] = p0**(Rd/cp)
+        p_env[0] = p_Rdcp[0]**(cp/Rd)
+        exner_env[0] = (p_env[0]/p0)**(Rd/cp)
+
+        thetav_env[0] = virtual_temperature(theta_env[0], q_env[0], 0.0)
+
         for i in range(1, len(z)):
             p_Rdcp[i] = p_Rdcp[i-1] - g/cp * p0**(Rd/cp) / thetav_env[i-1] * dz
+            p_env[i] = p_Rdcp[i]**(cp/Rd)
+            exner_env[i] = (p_env[i]/p0)**(Rd/cp)
+            thetav_env[i] = virtual_temperature(theta_env[i], q_env[i], 0.0)
 
-        p_env = p_Rdcp**(cp/Rd)
-        exner_env = (p_env/p0)**(Rd/cp)
         rho_env = p_env / (Rd * exner_env * thetav_env)
 
         # Compute the entraining plume ascent.
@@ -237,8 +246,8 @@ class MixedLayerModel:
         type_plume = np.zeros_like(z, dtype=np.int8)
 
         # Initial plume conditions.
-        theta_plume[0] = theta + fire_multiplier*self.dtheta_plume
-        q_plume[0] = q + fire_multiplier*self.dq_plume
+        theta_plume[0] = theta_env[0] + fire_multiplier*self.dtheta_plume
+        q_plume[0] = q_env[0] + fire_multiplier*self.dq_plume
         thetav_plume[0], _ = calc_thetav(theta_plume[0], q_plume[0], p_env[0], exner_env[0])
         area_plume[0] = 300_000 # 1,000 * 300 from Martin's script for Martorell.
         w_plume[0] = 0.1
