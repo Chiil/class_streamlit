@@ -16,5 +16,5 @@ dq = -0.001
 wq = 1e-4
 gammaq = 0.0
 
-
-dtheta_plume = 0.2
+dtheta_plume = 1.0
+dq_plume = 0.001
