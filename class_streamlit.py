@@ -184,12 +184,14 @@ def process_delete_sounding():
     pass
 
 
-def process_soundings_uploaded():
-    if ss.soundings_uploaded is not None:
-        df = pd.read_csv(ss.soundings_uploaded)
+def process_sounding_uploaded():
+    if ss.sounding_uploaded is not None:
+        df = pd.read_csv(ss.sounding_uploaded)
         ss.all_soundings[ss.sounding_name_input] = df
         ss.all_soundings_key = ss.sounding_name_input
         ss.selected_sounding = ss.all_soundings_key
+
+    ss.main_mode = MainMode.PLOT
 
 
 # Deal with the state.
@@ -1045,5 +1047,7 @@ elif ss.main_mode == MainMode.EDIT:
 
 
 elif ss.main_mode == MainMode.SOUNDING:
-    st.text_input("Sounding name", key="sounding_name_input")
-    st.file_uploader("Upload a sounding .csv file", key="soundings_uploaded", on_change=process_soundings_uploaded)
+    with st.form("sounding_form", border=False):
+        st.form_submit_button("Add", on_click=process_sounding_uploaded)
+        st.text_input("Sounding name", key="sounding_name_input")
+        st.file_uploader("Upload a sounding .csv file", key="sounding_uploaded")
