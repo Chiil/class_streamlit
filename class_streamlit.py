@@ -228,7 +228,7 @@ with st.sidebar:
     st.divider()
 
     st.header("Plots")
-    new_line_plot, new_profile_plot, new_skewt_plot = st.columns(3)
+    new_line_plot, new_profile_plot, new_fire_plot = st.columns(3)
     new_line_plot.button(
         "",
         help="New timeseries plot",
@@ -241,7 +241,7 @@ with st.sidebar:
         icon=":material/expand:",
         use_container_width=True,
         on_click=process_new_profile_plot)
-    new_skewt_plot.button(
+    new_fire_plot.button(
         "",
         help="New fire plume plot",
         icon=":material/local_fire_department:",
@@ -558,7 +558,9 @@ if ss.main_mode == MainMode.PLOT:
                             )
                         )
 
-                for sounding_name, sounding_df in ss.all_soundings.items():
+                for sounding_name in ss[f"plot_{i}_soundings"]:
+                    sounding_df = ss.all_soundings[sounding_name]
+
                     fig.add_trace(
                         go.Scatter(
                             x=sounding_df[plot.xaxis_key],
