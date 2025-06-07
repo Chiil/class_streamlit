@@ -198,6 +198,9 @@ ss.time_max = 0
 for _, run in ss.all_runs.items():
     ss.time_max = max(ss.time_max, run.output.time.values[-1])
 
+if "all_soundings" not in ss:
+    ss.all_soundings = {"Cabauw 26.04.1982": pd.read_csv("cabauw_sounding.csv")}
+
 
 # Side bar.
 with st.sidebar:
@@ -370,6 +373,9 @@ with st.sidebar:
                     selection_mode="multi",
                     key=f"plot_{i}_fire")
 
+    st.divider()
+
+    st.header("Soundings")
 
 if ss.main_mode == MainMode.PLOT:
     ncols = st.radio("Number of columns", [1, 2, 3, 4], horizontal=True)
@@ -528,6 +534,23 @@ if ss.main_mode == MainMode.PLOT:
                                 line=dict(color=color_cycle[run.color_index % len(color_cycle)])
                             )
                         )
+
+                for sounding_name, sounding_df in ss.all_soundings.items():
+                    fig.add_trace(
+                        go.Scatter(
+                            x=sounding_df["theta"],
+                            y=sounding_df["z"],
+                            mode="markers",
+                            showlegend=True,
+                            name=sounding_name,
+                            marker=dict(
+                                color="black",
+                                symbol="cross",
+                                size=3,
+                                )
+                        )
+                    )
+
 
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
