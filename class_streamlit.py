@@ -173,8 +173,7 @@ def process_edit_cancel():
 
 
 def process_add_sounding():
-    ss.main_mode = MainMode.SOUNDING
-    st.file_uploader("Upload a sounding .csv file", key="soundings_uploaded", on_change=process_soundings_uploaded)
+    pass
 
 
 def process_edit_sounding():
@@ -191,8 +190,6 @@ def process_soundings_uploaded():
         ss.all_soundings["Cabauw 26.04.1982"] = df
         ss.all_soundings_key = "Cabauw 26.04.1982"
         ss.selected_sounding = ss.all_soundings_key
-
-    # ss.main_mode = MainMode.PLOT
 
 
 # Deal with the state.
@@ -423,11 +420,12 @@ with st.sidebar:
         key="selected_sounding",
     )
 
-    add_sounding, edit_sounding, delete_sounding = st.columns(3)
-    add_sounding.button("", icon=":material/add:", use_container_width=True, on_click=process_add_sounding, key="add_sounding_button")
-    edit_sounding.button("", icon=":material/edit:", use_container_width=True, on_click=process_edit_sounding, key="edit_sounding_button")
-    delete_sounding.button("", icon=":material/delete:", use_container_width=True, on_click=process_delete_sounding, key="delete_sounding_button")
+    # add_sounding, edit_sounding, delete_sounding = st.columns(3)
+    # add_sounding.button("", icon=":material/add:", use_container_width=True, on_click=process_add_sounding, key="add_sounding_button")
+    # edit_sounding.button("", icon=":material/edit:", use_container_width=True, on_click=process_edit_sounding, key="edit_sounding_button")
+    # delete_sounding.button("", icon=":material/delete:", use_container_width=True, on_click=process_delete_sounding, key="delete_sounding_button")
 
+    st.file_uploader("Upload a sounding .csv file", key="soundings_uploaded", on_change=process_soundings_uploaded)
 
 if ss.main_mode == MainMode.PLOT:
     ncols = st.radio("Number of columns", [1, 2, 3, 4], horizontal=True)
@@ -1045,7 +1043,3 @@ elif ss.main_mode == MainMode.EDIT:
                         format="%0.1f",
                         key="settings_fire_atmosphere_dq_plume"
                     )
-
-
-elif ss.main_mode == MainMode.SOUNDING:
-    pass

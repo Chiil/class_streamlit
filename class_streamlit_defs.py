@@ -21,7 +21,6 @@ ep = 0.622
 class MainMode(Enum):
     PLOT = auto()
     EDIT = auto()
-    SOUNDING = auto()
 
 
 def virtual_temperature(t, qt, ql):
