@@ -449,7 +449,7 @@ if ss.main_mode == MainMode.PLOT:
                         elif plot.xaxis_key == "q":
                             q = run.output.q.values[idx]
                             dq = run.output.dq.values[idx]
-                            gammaq = run.gammaq
+                            gammaq = run.gammaq * 1e3
                             x_plot = [q, q, q + dq, q + dq + gammaq*(h_max-h)]
 
                         elif plot.xaxis_key == "thetav":
@@ -497,7 +497,7 @@ if ss.main_mode == MainMode.PLOT:
                         elif plot.xaxis_key == "q":
                             q = run.output.q.values[idx]
                             dq = run.output.dq.values[idx]
-                            gammaq = run.gammaq
+                            gammaq = run.gammaq * 1e3
                             x_plot = [q, q, q + dq, q + dq + gammaq*(h_max-h)]
 
                         elif plot.xaxis_key == "thetav":
@@ -577,7 +577,7 @@ if ss.main_mode == MainMode.PLOT:
                             elif plot.xaxis_key == "q":
                                 q = run.output.q.values[idx]
                                 dq = run.output.dq.values[idx]
-                                gammaq = run.gammaq
+                                gammaq = run.gammaq * 1e3
                                 x_plot = [q, q, q + dq, q + dq + gammaq*(h_max-h)]
 
                             elif plot.xaxis_key == "thetav":
@@ -674,7 +674,7 @@ if ss.main_mode == MainMode.PLOT:
                         elif plot.xaxis_key == "q":
                             q = run.output.q.values[idx]
                             dq = run.output.dq.values[idx]
-                            gammaq = run.gammaq
+                            gammaq = run.gammaq * 1e3
                             x_plot = [q, q, q + dq, q + dq + gammaq*(h_max-h)]
 
                         elif plot.xaxis_key == "thetav":
