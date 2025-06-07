@@ -14,11 +14,10 @@ wq = 1e-4
 gammaq = 0.0
 
 dz = 25.0
-z = np.arange(dz/2, 1.5*h, dz)
+z = np.arange(dz/2, 1500.0, dz)
 
-theta_plot = np.where(z < h, theta, theta + dtheta + gammatheta*(z - h)) + np.random.rand(len(z))
-q_plot = np.where(z < h, q, q + dq + gammaq*(z - h)) + 0.001*np.random.rand(len(z))
-
+theta_plot = np.where(z < h, theta, theta + dtheta + gammatheta*(z - h)) + (np.random.rand(len(z)) - 0.5)
+q_plot = np.where(z < h, q, q + dq + gammaq*(z - h)) + 0.001*(np.random.rand(len(z)) - 0.5)
 
 df = pd.DataFrame(data={
     "z": z,
