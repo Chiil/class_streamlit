@@ -172,6 +172,18 @@ def process_edit_cancel():
     ss.main_mode = MainMode.PLOT
 
 
+def process_add_sounding():
+    ss.main_mode = MainMode.SOUNDING
+
+
+def process_edit_sounding():
+    ss.main_mode = MainMode.SOUNDING
+
+
+def process_delete_sounding():
+    pass
+
+
 # Deal with the state.
 if "available_colors" not in ss:
     ss.available_colors = [i for i in range(n_maxruns)]
@@ -201,9 +213,9 @@ for _, run in ss.all_runs.items():
     ss.time_max = max(ss.time_max, run.output.time.values[-1])
 
 if "all_soundings" not in ss:
-    ss.all_soundings = {"Cabauw 26.04.1982": pd.read_csv("cabauw_sounding.csv")}
+    ss.all_soundings = {}
 if "all_soundings_key" not in ss:
-    ss.all_soundings_key = "Cabauw 26.04.1982"
+    ss.all_soundings_key = None
 
 
 # Side bar.
@@ -390,14 +402,20 @@ with st.sidebar:
 
     st.header("Soundings")
 
+    soundings_index = None if not ss.all_soundings else list(ss.all_soundings.keys()).index(ss.all_soundings_key)
+
     # handle selectbox selection first
     st.selectbox(
         "Name",
         ss.all_soundings.keys(),
-        index=list(ss.all_soundings.keys()).index(ss.all_soundings_key),
+        index=soundings_index,
         key="selected_sounding",
-        # on_change=process_selected_run
     )
+
+    add_sounding, edit_sounding, delete_sounding = st.columns(3)
+    add_sounding.button("", icon=":material/add:", use_container_width=True, on_click=process_add_sounding, key="add_sounding_button")
+    edit_sounding.button("", icon=":material/edit:", use_container_width=True, on_click=process_edit_sounding, key="edit_sounding_button")
+    delete_sounding.button("", icon=":material/delete:", use_container_width=True, on_click=process_delete_sounding, key="delete_sounding_button")
 
 
 if ss.main_mode == MainMode.PLOT:
@@ -1016,3 +1034,13 @@ elif ss.main_mode == MainMode.EDIT:
                         format="%0.1f",
                         key="settings_fire_atmosphere_dq_plume"
                     )
+
+
+elif ss.main_mode == MainMode.SOUNDING:
+
+    uploaded_file = st.file_uploader("Upload a sounding .csv file")
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        ss.all_soundings["Cabauw 26.04.1982"] = df
+        ss.all_soundings_key = "Cabauw 26.04.1982"
+
