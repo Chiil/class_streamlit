@@ -200,6 +200,8 @@ for _, run in ss.all_runs.items():
 
 if "all_soundings" not in ss:
     ss.all_soundings = {"Cabauw 26.04.1982": pd.read_csv("cabauw_sounding.csv")}
+if "all_soundings_key" not in ss:
+    ss.all_soundings_key = "Cabauw 26.04.1982"
 
 
 # Side bar.
@@ -377,6 +379,16 @@ with st.sidebar:
 
     st.header("Soundings")
 
+    # handle selectbox selection first
+    st.selectbox(
+        "Name",
+        ss.all_soundings.keys(),
+        index=list(ss.all_soundings.keys()).index(ss.all_soundings_key),
+        key="selected_sounding",
+        # on_change=process_selected_run
+    )
+
+
 if ss.main_mode == MainMode.PLOT:
     ncols = st.radio("Number of columns", [1, 2, 3, 4], horizontal=True)
     n = 0
@@ -538,7 +550,7 @@ if ss.main_mode == MainMode.PLOT:
                 for sounding_name, sounding_df in ss.all_soundings.items():
                     fig.add_trace(
                         go.Scatter(
-                            x=sounding_df["theta"],
+                            x=sounding_df[plot.xaxis_key],
                             y=sounding_df["z"],
                             mode="markers",
                             showlegend=True,

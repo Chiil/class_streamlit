@@ -22,7 +22,7 @@ q_plot = np.where(z < h, q, q + dq + gammaq*(z - h)) + 0.001*(np.random.rand(len
 df = pd.DataFrame(data={
     "z": z,
     "theta": theta_plot,
-    "q": q_plot,
+    "q": q_plot*1e3,
 })
 
 df.to_csv("cabauw_sounding.csv")
