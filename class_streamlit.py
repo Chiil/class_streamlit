@@ -174,14 +174,25 @@ def process_edit_cancel():
 
 def process_add_sounding():
     ss.main_mode = MainMode.SOUNDING
+    st.file_uploader("Upload a sounding .csv file", key="soundings_uploaded", on_change=process_soundings_uploaded)
 
 
 def process_edit_sounding():
-    ss.main_mode = MainMode.SOUNDING
+    pass
 
 
 def process_delete_sounding():
     pass
+
+
+def process_soundings_uploaded():
+    if ss.soundings_uploaded is not None:
+        df = pd.read_csv(ss.soundings_uploaded)
+        ss.all_soundings["Cabauw 26.04.1982"] = df
+        ss.all_soundings_key = "Cabauw 26.04.1982"
+        ss.selected_sounding = ss.all_soundings_key
+
+    # ss.main_mode = MainMode.PLOT
 
 
 # Deal with the state.
@@ -402,7 +413,7 @@ with st.sidebar:
 
     st.header("Soundings")
 
-    soundings_index = None if not ss.all_soundings else list(ss.all_soundings.keys()).index(ss.all_soundings_key)
+    soundings_index = None
 
     # handle selectbox selection first
     st.selectbox(
@@ -1037,10 +1048,4 @@ elif ss.main_mode == MainMode.EDIT:
 
 
 elif ss.main_mode == MainMode.SOUNDING:
-
-    uploaded_file = st.file_uploader("Upload a sounding .csv file")
-    if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file)
-        ss.all_soundings["Cabauw 26.04.1982"] = df
-        ss.all_soundings_key = "Cabauw 26.04.1982"
-
+    pass
