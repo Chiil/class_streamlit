@@ -185,6 +185,10 @@ def process_delete_sounding():
 
 
 def process_sounding_uploaded():
+    if ss.sounding_name_input == "":
+        st.warning("Sounding name cannot be empty")
+        return
+
     if ss.sounding_uploaded is not None:
         df = pd.read_csv(ss.sounding_uploaded)
         ss.all_soundings[ss.sounding_name_input] = df
