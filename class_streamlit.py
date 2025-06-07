@@ -156,13 +156,13 @@ def process_edit_save():
     settings["gammatheta"] = ss.settings_temperature_gammatheta
 
     # Convert back from kg kg-1 to kkg kg-1
-    settings["q"] = ss.settings_moisture_q
-    settings["dq"] = ss.settings_moisture_dq
-    settings["wq"] = ss.settings_moisture_wq
-    settings["gammaq"] = ss.settings_moisture_gammaq
+    settings["q"] = ss.settings_moisture_q * 1e-3
+    settings["dq"] = ss.settings_moisture_dq * 1e-3
+    settings["wq"] = ss.settings_moisture_wq * 1e-3
+    settings["gammaq"] = ss.settings_moisture_gammaq * 1e-3
 
     settings["dtheta_plume"] = ss.settings_fire_atmosphere_dtheta_plume
-    settings["dq_plume"] = ss.settings_fire_atmosphere_dq_plume
+    settings["dq_plume"] = ss.settings_fire_atmosphere_dq_plume * 1e-3
 
     ss.all_runs[ss.all_runs_key] = MixedLayerModel(settings, color)
     ss.main_mode = MainMode.PLOT
@@ -457,8 +457,8 @@ if ss.main_mode == MainMode.PLOT:
                             dtheta = run.output.dtheta.values[idx]
                             gammatheta = run.gammatheta
 
-                            q = run.output.q.values[idx]
-                            dq = run.output.dq.values[idx]
+                            q = run.output.q.values[idx] * 1e-3
+                            dq = run.output.dq.values[idx] * 1e-3
                             gammaq = run.gammaq
 
                             x_plot = [
@@ -505,8 +505,8 @@ if ss.main_mode == MainMode.PLOT:
                             dtheta = run.output.dtheta.values[idx]
                             gammatheta = run.gammatheta
 
-                            q = run.output.q.values[idx]
-                            dq = run.output.dq.values[idx]
+                            q = run.output.q.values[idx] * 1e-3
+                            dq = run.output.dq.values[idx] * 1e-3
                             gammaq = run.gammaq
 
                             x_plot = [
@@ -585,8 +585,8 @@ if ss.main_mode == MainMode.PLOT:
                                 dtheta = run.output.dtheta.values[idx]
                                 gammatheta = run.gammatheta
 
-                                q = run.output.q.values[idx]
-                                dq = run.output.dq.values[idx]
+                                q = run.output.q.values[idx] * 1e-3
+                                dq = run.output.dq.values[idx] * 1e-3
                                 gammaq = run.gammaq
 
                                 x_plot = [
@@ -682,8 +682,9 @@ if ss.main_mode == MainMode.PLOT:
                             dtheta = run.output.dtheta.values[idx]
                             gammatheta = run.gammatheta
 
-                            q = run.output.q.values[idx]
-                            dq = run.output.dq.values[idx]
+                            # Convert back to kg/kg
+                            q = run.output.q.values[idx] * 1e-3
+                            dq = run.output.dq.values[idx] * 1e-3
                             gammaq = run.gammaq
 
                             x_plot = [
@@ -797,18 +798,18 @@ elif ss.main_mode == MainMode.EDIT:
         ss.settings_temperature_gammatheta = active_run.settings["gammatheta"]
 
     if "settings_moisture_q" not in ss:
-        ss.settings_moisture_q = active_run.settings["q"]
+        ss.settings_moisture_q = active_run.settings["q"] * 1e3
     if "settings_moisture_dq" not in ss:
-        ss.settings_moisture_dq = active_run.settings["dq"]
+        ss.settings_moisture_dq = active_run.settings["dq"] * 1e3
     if "settings_temperature_wq" not in ss:
-        ss.settings_moisture_wq = active_run.settings["wq"]
+        ss.settings_moisture_wq = active_run.settings["wq"] * 1e3
     if "settings_temperature_gammaq" not in ss:
-        ss.settings_moisture_gammaq = active_run.settings["gammaq"]
+        ss.settings_moisture_gammaq = active_run.settings["gammaq"] * 1e3
 
     if "settings_fire_atmosphere_dtheta_plume" not in ss:
         ss.settings_fire_atmosphere_dtheta_plume = active_run.settings["dtheta_plume"]
     if "settings_fire_atmosphere_dq_plume" not in ss:
-        ss.settings_fire_atmosphere_dq_plume = active_run.settings["dq_plume"]
+        ss.settings_fire_atmosphere_dq_plume = active_run.settings["dq_plume"] * 1e3
 
     # Always set the edit key to the selected run.
     ss.run_name_input = ss.all_runs_key
@@ -912,34 +913,34 @@ elif ss.main_mode == MainMode.EDIT:
 
                 with st.expander("Moisture", expanded=True):
                     st.number_input(
-                        r"$q$ (kg kg-1)",
-                        help="specific humidity (kg kg-1)",
-                        step=0.0005,
-                        format="%0.4f",
+                        r"$q$ (g kg-1)",
+                        help="specific humidity (g kg-1)",
+                        step=0.5,
+                        format="%0.1f",
                         key="settings_moisture_q"
                     )
 
                     st.number_input(
-                        r"$\Delta q$ (kg kg-1)",
-                        help="specific humidity jump (kg kg-1)",
-                        step=0.0005,
-                        format="%0.4f",
+                        r"$\Delta q$ (g kg-1)",
+                        help="specific humidity jump (g kg-1)",
+                        step=0.5,
+                        format="%0.1f",
                         key="settings_moisture_dq"
                     )
 
                     st.number_input(
-                        r"$\overline{w^\prime q^\prime}_s$ (kg kg-1 m s-1)",
-                        help="specific humidity surface flux (kg kg-1 m s-1)",
+                        r"$\overline{w^\prime q^\prime}_s$ (g kg-1 m s-1)",
+                        help="specific humidity surface flux (g kg-1 m s-1)",
                         step=0.01,
-                        format="%0.6f",
+                        format="%0.3f",
                         key="settings_moisture_wq"
                     )
 
                     st.number_input(
-                        r"$\gamma_\theta$ (kg kg-1  m-1)",
-                        help="specific humidity lapse rate (kg kg-1 m-1)",
-                        step=0.0000005,
-                        format="%0.7f",
+                        r"$\gamma_\theta$ (g kg-1  m-1)",
+                        help="specific humidity lapse rate (g kg-1 m-1)",
+                        step=0.0005,
+                        format="%0.4f",
                         key="settings_moisture_gammaq"
                     )
 
@@ -961,9 +962,9 @@ elif ss.main_mode == MainMode.EDIT:
                     )
 
                     st.number_input(
-                        r"$\Delta q_\textrm{plume}$ (kg kg-1)",
-                        help="Plume excess specific humidity (kg kg-1)",
-                        step=0.0005,
-                        format="%0.4f",
+                        r"$\Delta q_\textrm{plume}$ (g kg-1)",
+                        help="Plume excess specific humidity (g kg-1)",
+                        step=0.5,
+                        format="%0.1f",
                         key="settings_fire_atmosphere_dq_plume"
                     )

@@ -187,8 +187,8 @@ class MixedLayerModel:
             "h": output.h,
             "theta": output.theta,
             "dtheta": output.dtheta,
-            "q": output.q,
-            "dq": output.dq,
+            "q": output.q * 1e3,
+            "dq": output.dq * 1e3,
             "thetav": output.thetav,
             "dthetav": output.dthetav,
             },
@@ -201,8 +201,8 @@ class MixedLayerModel:
         theta = self.output.theta[idx]
         dtheta = self.output.dtheta[idx]
 
-        q = self.output.q[idx]
-        dq = self.output.dq[idx]
+        q = self.output.q[idx] * 1e-3
+        dq = self.output.dq[idx] * 1e-3
 
         h = self.output.h[idx]
 
@@ -290,7 +290,7 @@ class MixedLayerModel:
             if (area_plume[i] <= 0) or (w_plume[i] < w_eps):
                 break
 
-        return theta_plume[:i], q_plume[:i], thetav_plume[:i], type_plume[:i], z[:i]
+        return theta_plume[:i], q_plume[:i] * 1e3, thetav_plume[:i], type_plume[:i], z[:i]
 
 
 class LinePlot:
