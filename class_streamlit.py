@@ -938,7 +938,7 @@ elif ss.main_mode == MainMode.EDIT:
                     st.number_input(
                         r"$\gamma_\theta$ (kg kg-1  m-1)",
                         help="specific humidity lapse rate (kg kg-1 m-1)",
-                        step=0.0005,
+                        step=0.0000005,
                         format="%0.7f",
                         key="settings_moisture_gammaq"
                     )
