@@ -191,6 +191,8 @@ else:
     for i, plot in ss.all_plots.items():
         if f"plot_{i}_runs" in ss:
             ss[f"plot_{i}_runs"] = ss[f"plot_{i}_runs"]
+        if f"plot_{i}_soundings" in ss:
+            ss[f"plot_{i}_soundings"] = ss[f"plot_{i}_soundings"]
 
 
 # Check the range of plot_times.
@@ -287,6 +289,8 @@ with st.sidebar:
         elif isinstance(plot, ProfilePlot):
             if f"plot_{i}_runs" not in ss:
                 ss[f"plot_{i}_runs"] = list(ss.all_runs.keys())
+            if f"plot_{i}_soundings" not in ss:
+                ss[f"plot_{i}_soundings"] = []
 
             # Update plot state BEFORE rendering selectboxes
             if f"plot_{i}_xaxis" in ss:
@@ -320,6 +324,13 @@ with st.sidebar:
                     options=list(ss.all_runs.keys()),
                     key=f"plot_{i}_runs",
                 )
+
+                st.multiselect(
+                    "Soundings to plot",
+                    options=list(ss.all_soundings.keys()),
+                    key=f"plot_{i}_soundings",
+                )
+
 
         elif isinstance(plot, PlumePlot):
             if f"plot_{i}_runs" not in ss:
