@@ -594,7 +594,7 @@ if ss.main_mode == MainMode.PLOT:
                     sounding_df = ss.all_soundings[sounding_name]
 
                     if plot.xaxis_key not in sounding_df.columns:
-                        st.warning(f"Requested variable {plot.xaxis_key} is not in sounding {sounding_name}")
+                        st.toast(f"Requested variable \"{plot.xaxis_key}\" is not in sounding \"{sounding_name}\"")
 
                     else:
                         fig.add_trace(
@@ -611,7 +611,6 @@ if ss.main_mode == MainMode.PLOT:
                                     )
                             )
                         )
-
 
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
