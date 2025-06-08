@@ -21,7 +21,7 @@ case_settings["name"] = case_name
 
 
 # Load sounding
-case_sounding = pd.read_csv("cabauw_sounding.csv").to_dict()
+case_sounding = pd.read_csv("cabauw_sounding.csv").to_dict(orient="list") # use the list to remove the index.
 case_sounding["name"] = sounding_name
 
 

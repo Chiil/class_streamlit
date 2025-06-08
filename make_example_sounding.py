@@ -25,4 +25,4 @@ df = pd.DataFrame(data={
     "q": q_plot*1e3,
 })
 
-df.to_csv("cabauw_sounding.csv")
+df.to_csv("cabauw_sounding.csv", index=False)
