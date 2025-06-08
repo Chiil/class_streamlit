@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit import session_state as ss
 from class_streamlit_defs import *
 import tomllib
+import datetime
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io
@@ -25,6 +26,8 @@ if "default_name" not in ss:
     with open(f"default_settings.toml", "rb") as f:
         ss.default_settings = tomllib.load(f)
         ss.default_name = "Default"
+        if "startdate" not in ss.default_settings:
+            ss.default_settings["startdate"] = datetime.datetime.now().date()
 
     if "c" in st.query_params:
         compressed = base64.urlsafe_b64decode(st.query_params["c"].encode('ascii'))
@@ -41,6 +44,8 @@ if "default_name" not in ss:
                 run_name = d["name"]
 
                 url_settings["runtime"] = float(d["runtime"])
+                url_settings["starttime"] = datetime.time.fromisoformat(d["starttime"])
+                url_settings["startdate"] = datetime.date.fromisoformat(d["startdate"])
                 url_settings["dt"] = float(d["dt"])
                 url_settings["dt_output"] = float(d["dt_output"])
 
@@ -183,6 +188,8 @@ def process_edit_save():
     del(ss.all_runs[ss.all_runs_key])
     settings = {}
     settings["runtime"] = ss.settings_general_runtime
+    settings["starttime"] = ss.settings_general_starttime
+    settings["startdate"] = ss.settings_general_startdate
     settings["dt"] = ss.settings_general_dt
     settings["dt_output"] = ss.settings_general_dt_output
 
@@ -941,6 +948,10 @@ elif ss.main_mode == MainMode.EDIT:
 
     if "settings_general_runtime" not in ss:
         ss.settings_general_runtime = active_run.settings["runtime"]
+    if "settings_general_starttime" not in ss:
+        ss.settings_general_starttime = active_run.settings["starttime"]
+    if "settings_general_startdate" not in ss:
+        ss.settings_general_startdate = active_run.settings["startdate"]
     if "settings_general_dt" not in ss:
         ss.settings_general_dt = active_run.settings["dt"]
     if "settings_general_dt_output" not in ss:
@@ -999,6 +1010,18 @@ elif ss.main_mode == MainMode.EDIT:
                         step=1.0,
                         format="%0.0f",
                         key="settings_general_runtime"
+                    )
+
+                    st.time_input(
+                        r"start time (hh:mm)",
+                        help="start time (hh:mm)",
+                        key="settings_general_starttime"
+                    )
+
+                    st.date_input(
+                        r"start date (YYYY/MM/DD)",
+                        help="start date (YYYY/MM/DD)",
+                        key="settings_general_startdate"
                     )
 
                     st.number_input(

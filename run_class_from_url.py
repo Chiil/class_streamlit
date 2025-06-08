@@ -19,6 +19,8 @@ base_url = "http://localhost:8501" # Server-side (default)
 with open(f"{case_name.lower()}_settings.toml", "rb") as f:
     case_settings = tomllib.load(f)
 case_settings["name"] = case_name
+case_settings["starttime"] = str(case_settings["starttime"])
+case_settings["startdate"] = str(case_settings["startdate"])
 
 
 # Load sounding

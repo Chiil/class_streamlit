@@ -1,6 +1,7 @@
 from enum import Enum, auto
 import numpy as np
 import pandas as pd
+import datetime
 
 
 # IMPORTANT!
@@ -90,6 +91,8 @@ class MixedLayerModel:
         self.color_index = color_index
 
         self.runtime = settings["runtime"]
+        self.starttime = settings["starttime"]
+        self.startdate = settings["startdate"]
         self.dt = settings["dt"]
         self.dt_output = settings["dt_output"]
 
@@ -183,8 +186,12 @@ class MixedLayerModel:
                 output.thetav[ii] = virtual_temperature(self.theta, self.q, 0.0)
                 output.dthetav[ii] = virtual_temperature(self.theta + self.dtheta, self.q + self.dq, 0.0) - output.thetav[ii]
 
+        full_datetime = datetime.datetime.combine(self.startdate, self.starttime)
+        output.datetime_utc = [ (full_datetime + datetime.timedelta(hours=time)) for time in output.time ]
+
         self.output = pd.DataFrame(data = {
             "time": output.time,
+            "time UTC": output.datetime_utc,
             "h": output.h,
             "theta": output.theta,
             "dtheta": output.dtheta,
@@ -296,7 +303,7 @@ class MixedLayerModel:
 
 class LinePlot:
     def __init__(self):
-        self.xaxis_options = ["time"]
+        self.xaxis_options = ["time", "time UTC"]
         self.yaxis_options = ["h", "theta", "dtheta", "q", "dq", "thetav", "dthetav"]
         self.xaxis_index = 0
         self.yaxis_index = 0
