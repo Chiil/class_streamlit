@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Stlite App</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@stlite/browser/build/style.css"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser/build/stlite.js";
+
+      async function loadAndMount() {
+        const files = {};
+
+        const fileNames = ["class_streamlit.py", "class_streamlit_defs.py", "default_settings.toml"];
+
+        for (const name of fileNames) {
+          const response = await fetch(name);
+          if (!response.ok) {
+            throw new Error(`Failed to load ${name}`);
+          }
+          files[name] = await response.text();
+        }
+
+        mount(
+          {
+            streamlitConfig: {
+              "client.toolbarMode": "viewer",
+              "theme.baseFontSize": 14,
+            },
+            requirements: ["plotly"],
+            entrypoint: "class_streamlit.py",
+            files,
+          },
+          document.getElementById("root"),
+        );
+      }
+
+      loadAndMount().catch((err) => {
+        console.error("Failed to mount Streamlit app:", err);
+      });
+    </script>
+  </body>
+</html>
