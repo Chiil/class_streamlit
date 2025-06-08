@@ -1,2 +1,5 @@
 [theme]
 baseFontSize = 14
+
+[server]
+runOnSave = true
