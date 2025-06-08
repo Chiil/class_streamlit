@@ -86,7 +86,7 @@ if "default_name" not in ss:
                 st.warning("The provided sounding via the URL is incomplete or corrupt, not loaded")
                 ss.all_soundings = {}
                 ss.all_soundings_key = None
- 
+
 
     st.query_params.clear()
 
@@ -411,6 +411,8 @@ with st.sidebar:
         elif isinstance(plot, PlumePlot):
             if f"plot_{i}_runs" not in ss:
                 ss[f"plot_{i}_runs"] = [ss.all_runs_key]
+            if f"plot_{i}_soundings" not in ss:
+                ss[f"plot_{i}_soundings"] = []
 
             # Update plot state BEFORE rendering selectboxes
             if f"plot_{i}_xaxis" in ss:
@@ -461,6 +463,13 @@ with st.sidebar:
                     ["0.25 x", "0.5 x", "1 x", "2 x", "4 x"],
                     selection_mode="multi",
                     key=f"plot_{i}_fire")
+
+                st.multiselect(
+                    "Soundings to plot",
+                    options=list(ss.all_soundings.keys()),
+                    key=f"plot_{i}_soundings",
+                )
+
 
     st.divider()
 
@@ -888,6 +897,28 @@ if ss.main_mode == MainMode.PLOT:
                                         )
                                 )
                             )
+
+                for sounding_name in ss[f"plot_{i}_soundings"]:
+                    sounding_df = ss.all_soundings[sounding_name]
+
+                    if plot.xaxis_key not in sounding_df.columns:
+                        st.toast(f"Requested variable \"{plot.xaxis_key}\" is not in sounding \"{sounding_name}\"")
+
+                    else:
+                        fig.add_trace(
+                            go.Scatter(
+                                x=sounding_df[plot.xaxis_key],
+                                y=sounding_df["z"],
+                                mode="markers",
+                                showlegend=True,
+                                name=sounding_name,
+                                marker=dict(
+                                    color="black",
+                                    symbol="cross",
+                                    size=3,
+                                    )
+                            )
+                        )
 
                 fig.update_layout(
                     margin={"t": 50, "l": 0, "b": 0, "r": 0},
