@@ -3,7 +3,7 @@ import urllib.parse
 import webbrowser
 import base64
 import json
-import zlib
+import gzip
 import pandas as pd
 
 
@@ -11,7 +11,7 @@ import pandas as pd
 case_name = "Cabauw"
 sounding_name = "cabauw_sounding"
 base_url = "http://localhost:8501"
-use_compression = False
+use_compression = True
 
 
 # Load settings
@@ -35,9 +35,11 @@ all_data = {
 }
 
 if use_compression:
-    all_data_json = json.dumps(all_data)
-    compressed_params = base64.urlsafe_b64encode(all_data_json.encode()).decode()
-    case_url = f"{base_url}?c={compressed_params}"
+    all_data_json = json.dumps(all_data, separators=(',', ':'))
+    all_data_compressed = gzip.compress(all_data_json.encode('utf-8'))
+
+    case_url_params = base64.urlsafe_b64encode(all_data_compressed).decode('ascii')
+    case_url = f"{base_url}?c={case_url_params}"
 else:
     case_url_params = urllib.parse.urlencode(all_data)
     case_url = f"{base_url}?{case_url_params}"
