@@ -221,7 +221,18 @@ def process_edit_sounding():
 
 
 def process_delete_sounding():
-    pass
+    # Delete the run name from all plot items.
+    for i, plot in ss.all_plots.items():
+        if isinstance(plot, ProfilePlot):
+            if ss.all_soundings_key in ss[f"plot_{i}_soundings"]:
+                ss[f"plot_{i}_soundings"].remove(ss.all_soundings_key)
+
+    del(ss.all_soundings[ss.all_soundings_key])
+
+    if not ss.all_soundings:
+        ss.all_soundings_key = None
+    else:
+        ss.all_soundings_key = list(ss.all_soundings.keys())[0]
 
 
 def process_sounding_uploaded():
@@ -464,7 +475,7 @@ with st.sidebar:
     add_sounding, edit_sounding, delete_sounding = st.columns(3)
     add_sounding.button("", icon=":material/add:", use_container_width=True, on_click=process_add_sounding, key="add_sounding_button")
     # edit_sounding.button("", icon=":material/edit:", use_container_width=True, on_click=process_edit_sounding, key="edit_sounding_button")
-    # delete_sounding.button("", icon=":material/delete:", use_container_width=True, on_click=process_delete_sounding, key="delete_sounding_button")
+    delete_sounding.button("", icon=":material/delete:", use_container_width=True, on_click=process_delete_sounding, key="delete_sounding_button")
 
 
 if ss.main_mode == MainMode.PLOT:
