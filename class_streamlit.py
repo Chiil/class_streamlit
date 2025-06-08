@@ -593,20 +593,24 @@ if ss.main_mode == MainMode.PLOT:
                 for sounding_name in ss[f"plot_{i}_soundings"]:
                     sounding_df = ss.all_soundings[sounding_name]
 
-                    fig.add_trace(
-                        go.Scatter(
-                            x=sounding_df[plot.xaxis_key],
-                            y=sounding_df["z"],
-                            mode="markers",
-                            showlegend=True,
-                            name=sounding_name,
-                            marker=dict(
-                                color="black",
-                                symbol="cross",
-                                size=3,
-                                )
+                    if plot.xaxis_key not in sounding_df.columns:
+                        st.warning(f"Requested variable {plot.xaxis_key} is not in sounding {sounding_name}")
+
+                    else:
+                        fig.add_trace(
+                            go.Scatter(
+                                x=sounding_df[plot.xaxis_key],
+                                y=sounding_df["z"],
+                                mode="markers",
+                                showlegend=True,
+                                name=sounding_name,
+                                marker=dict(
+                                    color="black",
+                                    symbol="cross",
+                                    size=3,
+                                    )
+                            )
                         )
-                    )
 
 
                 fig.update_layout(
