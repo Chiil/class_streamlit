@@ -5,10 +5,17 @@ import tomllib
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io
+import ast
 
 
 # Ensure that plots fill the whole page, must be first call to streamlit.
 st.set_page_config(layout="wide")
+
+
+if "all_soundings" not in ss:
+    ss.all_soundings = {}
+if "all_soundings_key" not in ss:
+    ss.all_soundings_key = None
 
 
 # Load the default settings from disk and override with URL settings.
@@ -17,38 +24,63 @@ if "default_name" not in ss:
         ss.default_settings = tomllib.load(f)
         ss.default_name = "Default"
 
-    if "run_name" in st.query_params:
-        url_settings = {}
+    # Get the run settings.
+    if "settings" in st.query_params:
         try:
-            url_settings["runtime"] = float(st.query_params["runtime"])
-            url_settings["dt"] = float(st.query_params["dt"])
-            url_settings["dt_output"] = float(st.query_params["dt_output"])
+            url_settings = {}
 
-            url_settings["h"] = float(st.query_params["h"])
-            url_settings["beta"] = float(st.query_params["beta"])
-            url_settings["div"] = float(st.query_params["div"])
+            d = ast.literal_eval(st.query_params["settings"])
+            st.write(d)
 
-            url_settings["theta"] = float(st.query_params["theta"])
-            url_settings["dtheta"] = float(st.query_params["dtheta"])
-            url_settings["wtheta"] = float(st.query_params["wtheta"])
-            url_settings["gammatheta"] = float(st.query_params["gammatheta"])
+            run_name = d["name"]
 
-            url_settings["q"] = float(st.query_params["q"])
-            url_settings["dq"] = float(st.query_params["dq"])
-            url_settings["wq"] = float(st.query_params["wq"])
-            url_settings["gammaq"] = float(st.query_params["gammaq"])
+            url_settings["runtime"] = float(d["runtime"])
+            url_settings["dt"] = float(d["dt"])
+            url_settings["dt_output"] = float(d["dt_output"])
 
-            url_settings["dtheta_plume"] = float(st.query_params["dtheta_plume"])
-            url_settings["dq_plume"] = float(st.query_params["dq_plume"])
+            url_settings["h"] = float(d["h"])
+            url_settings["beta"] = float(d["beta"])
+            url_settings["div"] = float(d["div"])
+
+            url_settings["theta"] = float(d["theta"])
+            url_settings["dtheta"] = float(d["dtheta"])
+            url_settings["wtheta"] = float(d["wtheta"])
+            url_settings["gammatheta"] = float(d["gammatheta"])
+
+            url_settings["q"] = float(d["q"])
+            url_settings["dq"] = float(d["dq"])
+            url_settings["wq"] = float(d["wq"])
+            url_settings["gammaq"] = float(d["gammaq"])
+
+            url_settings["dtheta_plume"] = float(d["dtheta_plume"])
+            url_settings["dq_plume"] = float(d["dq_plume"])
 
             # Input is valid, overwrite the defaults.
-            ss.default_name = str(st.query_params["run_name"])
+            ss.default_name = run_name
             ss.default_settings = url_settings
 
         except KeyError:
-            st.warning("The provided input via the URL is incomplete or corrupt, reverting to default settings")
+            st.warning("The provided settings via the URL are incomplete or corrupt, reverting to default settings")
 
-        st.query_params.clear()
+
+    # Get the provided sounding.
+    if "settings" in st.query_params:
+        try:
+            url_settings = {}
+            d = ast.literal_eval(st.query_params["sounding"])
+
+            sounding_name = d["name"]
+
+            df = pd.DataFrame.from_dict(d)
+            ss.all_soundings[sounding_name] = df
+            ss.all_soundings_key = sounding_name
+            ss.selected_sounding = ss.all_soundings_key
+
+        except KeyError:
+            st.warning("The provided sounding via the URL is incomplete or corrupt, not loaded")
+ 
+
+    st.query_params.clear()
 
 
 # Set the variables to handle the plotting properly.
@@ -225,11 +257,6 @@ else:
 ss.time_max = 0
 for _, run in ss.all_runs.items():
     ss.time_max = max(ss.time_max, run.output.time.values[-1])
-
-if "all_soundings" not in ss:
-    ss.all_soundings = {}
-if "all_soundings_key" not in ss:
-    ss.all_soundings_key = None
 
 
 # Side bar.
