@@ -12,6 +12,7 @@ case_name = "Cabauw"
 sounding_name = "cabauw_sounding"
 base_url = "http://localhost:8501" # Server-side (default)
 # base_url = "http://localhost:8000/class_streamlit.html" # Client-side (pyiodide)
+# base_url = "https://chiil.github.io/class_streamlit/index.html" # Client-side (pyiodide)
 
 
 # Load settings
