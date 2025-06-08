@@ -249,6 +249,10 @@ def process_sounding_uploaded():
     ss.main_mode = MainMode.PLOT
 
 
+def process_sounding_close():
+    ss.main_mode = MainMode.PLOT
+
+
 # Deal with the state.
 if "available_colors" not in ss:
     ss.available_colors = [i for i in range(n_maxruns)]
@@ -1105,6 +1109,9 @@ elif ss.main_mode == MainMode.SOUNDING:
     st.header("Edit sounding")
 
     with st.form("sounding_form", border=False):
-        st.form_submit_button("Add", on_click=process_sounding_uploaded)
+        col_add, col_cancel = st.columns(2)
+        col_add.form_submit_button("Add", on_click=process_sounding_uploaded)
+        col_cancel.form_submit_button("Close", on_click=process_sounding_close)
+
         st.text_input("Sounding name", key="sounding_name_input")
         st.file_uploader("Upload a sounding .csv file", key="sounding_uploaded")
