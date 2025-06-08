@@ -30,7 +30,6 @@ if "default_name" not in ss:
             url_settings = {}
 
             d = ast.literal_eval(st.query_params["settings"])
-            st.write(d)
 
             run_name = d["name"]
 
@@ -78,6 +77,8 @@ if "default_name" not in ss:
 
         except KeyError:
             st.warning("The provided sounding via the URL is incomplete or corrupt, not loaded")
+            ss.all_soundings = {}
+            ss.all_soundings_key = None
  
 
     st.query_params.clear()
