@@ -22,6 +22,9 @@ case_settings["name"] = case_name
 
 # Load sounding
 case_sounding = pd.read_csv("cabauw_sounding.csv").to_dict(orient="list") # use the list to remove the index.
+for key, series in case_sounding.items():
+    case_sounding[key] = [ round(value, 3) for value in series ]
+
 case_sounding["name"] = sounding_name
 
 
@@ -39,5 +42,5 @@ else:
     case_url_params = urllib.parse.urlencode(all_data)
     case_url = f"{base_url}?{case_url_params}"
 
-print(f"Opening URL: {case_url}")
+print(f"Opening URL (length = {len(case_url)}): {case_url}")
 webbrowser.open(case_url)
