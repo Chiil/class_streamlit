@@ -10,42 +10,44 @@
     <title>Stlite App</title>
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@stlite/browser@0.76.0/build/style.css"
+      href="https://cdn.jsdelivr.net/npm/@stlite/browser/build/style.css"
     />
   </head>
   <body>
     <div id="root"></div>
     <script type="module">
-      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@0.76.0/build/stlite.js";
-      mount(
-        {
-          requirements: ["matplotlib"], // Packages to install
-          entrypoint: "class_streamlit.py", // The target file of the `streamlit run` command
-          files: {
-            "class_streamlit.py": `
-import streamlit as st
-import matplotlib.pyplot as plt
-import numpy as np
+      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser/build/stlite.js";
 
-size = st.slider("Sample size", 100, 1000)
+      async function loadAndMount() {
+        const files = {};
 
-arr = np.random.normal(1, 1, size=size)
-fig, ax = plt.subplots()
-ax.hist(arr, bins=20)
+        const fileNames = ["class_streamlit.py", "class_streamlit_defs.py", "default_settings.toml"];
 
-st.pyplot(fig)
-`,
-            "class_streamlit_defs.py": `
-print("Hello world")
-`,
+        for (const name of fileNames) {
+          const response = await fetch(name);
+          if (!response.ok) {
+            throw new Error(`Failed to load ${name}`);
+          }
+          files[name] = await response.text();
+        }
+
+        mount(
+          {
+            streamlitConfig: {
+              "client.toolbarMode": "viewer",
+              "theme.baseFontSize": 14,
+            },
+            requirements: ["plotly"],
+            entrypoint: "class_streamlit.py",
+            files,
           },
-          streamlitConfig: {
-            // Streamlit configuration
-            "client.toolbarMode": "viewer",
-          },
-        },
-        document.getElementById("root"),
-      );
+          document.getElementById("root"),
+        );
+      }
+
+      loadAndMount().catch((err) => {
+        console.error("Failed to mount Streamlit app:", err);
+      });
     </script>
   </body>
 </html>
