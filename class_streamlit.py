@@ -899,6 +899,7 @@ if ss.main_mode == MainMode.PLOT:
 
 
 elif ss.main_mode == MainMode.EDIT:
+
     st.header("Edit run")
 
     active_run = ss.all_runs[ss.all_runs_key]
@@ -1100,6 +1101,9 @@ elif ss.main_mode == MainMode.EDIT:
 
 
 elif ss.main_mode == MainMode.SOUNDING:
+
+    st.header("Edit sounding")
+
     with st.form("sounding_form", border=False):
         st.form_submit_button("Add", on_click=process_sounding_uploaded)
         st.text_input("Sounding name", key="sounding_name_input")
