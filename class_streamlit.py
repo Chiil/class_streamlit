@@ -5,7 +5,9 @@ import tomllib
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io
-import ast
+import base64
+import json
+import gzip
 
 
 # Ensure that plots fill the whole page, must be first call to streamlit.
@@ -24,61 +26,66 @@ if "default_name" not in ss:
         ss.default_settings = tomllib.load(f)
         ss.default_name = "Default"
 
-    # Get the run settings.
-    if "settings" in st.query_params:
-        try:
-            url_settings = {}
+    if "c" in st.query_params:
+        compressed = base64.urlsafe_b64decode(st.query_params["c"].encode('ascii'))
+        json_str = gzip.decompress(compressed).decode('utf-8')
+        url_data = json.loads(json_str)
 
-            d = ast.literal_eval(st.query_params["settings"])
+        # Get the run settings.
+        if "settings" in url_data:
+            try:
+                url_settings = {}
 
-            run_name = d["name"]
+                d = url_data["settings"]
 
-            url_settings["runtime"] = float(d["runtime"])
-            url_settings["dt"] = float(d["dt"])
-            url_settings["dt_output"] = float(d["dt_output"])
+                run_name = d["name"]
 
-            url_settings["h"] = float(d["h"])
-            url_settings["beta"] = float(d["beta"])
-            url_settings["div"] = float(d["div"])
+                url_settings["runtime"] = float(d["runtime"])
+                url_settings["dt"] = float(d["dt"])
+                url_settings["dt_output"] = float(d["dt_output"])
 
-            url_settings["theta"] = float(d["theta"])
-            url_settings["dtheta"] = float(d["dtheta"])
-            url_settings["wtheta"] = float(d["wtheta"])
-            url_settings["gammatheta"] = float(d["gammatheta"])
+                url_settings["h"] = float(d["h"])
+                url_settings["beta"] = float(d["beta"])
+                url_settings["div"] = float(d["div"])
 
-            url_settings["q"] = float(d["q"])
-            url_settings["dq"] = float(d["dq"])
-            url_settings["wq"] = float(d["wq"])
-            url_settings["gammaq"] = float(d["gammaq"])
+                url_settings["theta"] = float(d["theta"])
+                url_settings["dtheta"] = float(d["dtheta"])
+                url_settings["wtheta"] = float(d["wtheta"])
+                url_settings["gammatheta"] = float(d["gammatheta"])
 
-            url_settings["dtheta_plume"] = float(d["dtheta_plume"])
-            url_settings["dq_plume"] = float(d["dq_plume"])
+                url_settings["q"] = float(d["q"])
+                url_settings["dq"] = float(d["dq"])
+                url_settings["wq"] = float(d["wq"])
+                url_settings["gammaq"] = float(d["gammaq"])
 
-            # Input is valid, overwrite the defaults.
-            ss.default_name = run_name
-            ss.default_settings = url_settings
+                url_settings["dtheta_plume"] = float(d["dtheta_plume"])
+                url_settings["dq_plume"] = float(d["dq_plume"])
 
-        except KeyError:
-            st.warning("The provided settings via the URL are incomplete or corrupt, reverting to default settings")
+                # Input is valid, overwrite the defaults.
+                ss.default_name = run_name
+                ss.default_settings = url_settings
+
+            except KeyError:
+                st.warning("The provided settings via the URL are incomplete or corrupt, reverting to default settings")
 
 
-    # Get the provided sounding.
-    if "settings" in st.query_params:
-        try:
-            url_settings = {}
-            d = ast.literal_eval(st.query_params["sounding"])
+        # Get the provided sounding.
+        if "sounding" in url_data:
+            try:
+                url_settings = {}
+                d = url_data["sounding"]
 
-            sounding_name = d["name"]
+                sounding_name = d["name"]
 
-            df = pd.DataFrame.from_dict(d)
-            ss.all_soundings[sounding_name] = df
-            ss.all_soundings_key = sounding_name
-            ss.selected_sounding = ss.all_soundings_key
+                df = pd.DataFrame.from_dict(d)
+                ss.all_soundings[sounding_name] = df
+                ss.all_soundings_key = sounding_name
+                ss.selected_sounding = ss.all_soundings_key
 
-        except KeyError:
-            st.warning("The provided sounding via the URL is incomplete or corrupt, not loaded")
-            ss.all_soundings = {}
-            ss.all_soundings_key = None
+            except KeyError:
+                st.warning("The provided sounding via the URL is incomplete or corrupt, not loaded")
+                ss.all_soundings = {}
+                ss.all_soundings_key = None
  
 
     st.query_params.clear()
