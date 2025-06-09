@@ -3,3 +3,6 @@ baseFontSize = 14
 
 [server]
 runOnSave = true
+
+[client]
+toolbarMode = "minimal"
