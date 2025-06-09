@@ -34,7 +34,7 @@ case_sounding["name"] = sounding_name
 # Merge data into JSON
 all_data = {
     "settings": case_settings,
-    "sounding": case_sounding,
+    "soundings": [ case_sounding ],
 }
 
 all_data_json = json.dumps(all_data, separators=(',', ':'))

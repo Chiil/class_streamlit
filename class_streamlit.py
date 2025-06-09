@@ -75,17 +75,19 @@ if "default_name" not in ss:
 
 
         # Get the provided sounding.
-        if "sounding" in url_data:
+        if "soundings" in url_data:
             try:
-                url_settings = {}
-                d = url_data["sounding"]
+                ds = url_data["soundings"]
 
-                sounding_name = d["name"]
+                for d in ds:
+                    sounding_name = d["name"]
 
-                df = pd.DataFrame.from_dict(d)
-                ss.all_soundings[sounding_name] = df
-                ss.all_soundings_key = sounding_name
-                ss.selected_sounding = ss.all_soundings_key
+                    df = pd.DataFrame.from_dict(d)
+                    ss.all_soundings[sounding_name] = df
+
+                    if ss.all_soundings_key == None:
+                        ss.all_soundings_key = sounding_name
+                        ss.selected_sounding = ss.all_soundings_key
 
             except KeyError:
                 st.warning("The provided sounding via the URL is incomplete or corrupt, not loaded")
