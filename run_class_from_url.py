@@ -9,7 +9,6 @@ import pandas as pd
 
 # Settings what and where to send.
 case_name = "Cabauw"
-sounding_name = "cabauw_sounding"
 base_url = "http://localhost:8501" # Server-side (default)
 # base_url = "http://localhost:8000/class_streamlit.html" # Client-side (pyiodide)
 # base_url = "https://chiil.github.io/class_streamlit/index.html" # Client-side (pyiodide)
@@ -24,17 +23,23 @@ case_settings["startdate"] = str(case_settings["startdate"])
 
 
 # Load sounding
-case_sounding = pd.read_csv("cabauw_sounding.csv").to_dict(orient="list") # use the list to remove the index.
-for key, series in case_sounding.items():
-    case_sounding[key] = [ round(value, 3) for value in series ]
+case_sounding_1 = pd.read_csv("cabauw_sounding_1.csv").to_dict(orient="list") # use the list to remove the index.
+for key, series in case_sounding_1.items():
+    case_sounding_1[key] = [ round(value, 3) for value in series ]
 
-case_sounding["name"] = sounding_name
+case_sounding_1["name"] = "Cabauw [13.08.21 07h]"
+
+case_sounding_2 = pd.read_csv("cabauw_sounding_2.csv").to_dict(orient="list") # use the list to remove the index.
+for key, series in case_sounding_2.items():
+    case_sounding_2[key] = [ round(value, 3) for value in series ]
+
+case_sounding_2["name"] = "Cabauw [13.08.21 10h]"
 
 
 # Merge data into JSON
 all_data = {
     "settings": case_settings,
-    "soundings": [ case_sounding ],
+    "soundings": [ case_sounding_1, case_sounding_2 ],
 }
 
 all_data_json = json.dumps(all_data, separators=(',', ':'))

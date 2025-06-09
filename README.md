@@ -10,7 +10,7 @@ Once the code is running and the Streamlit server is active, you can send a case
 
 First, example input data needs to be generated:
 
-`python make_example_sounding.py`
+`python make_example_soundings.py`
 
 Then, the case can be launched using:
 
