@@ -435,7 +435,7 @@ with st.sidebar:
 
             with st.container(border=True):
                 col1, col2 = st.columns([2, 1])
-                col1.header(f":material/expand: Plot {i}")
+                col1.header(f":material/local_fire_department: Plot {i}")
                 col2.button(
                     "",
                     icon=":material/delete:",
