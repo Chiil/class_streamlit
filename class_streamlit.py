@@ -12,7 +12,11 @@ import gzip
 
 
 # Ensure that plots fill the whole page, must be first call to streamlit.
-st.set_page_config(layout="wide")
+st.set_page_config(
+    layout="wide",
+    page_title="CLASS",
+    page_icon=":material/partly_cloudy_day:",
+)
 
 
 if "all_soundings" not in ss:
