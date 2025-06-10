@@ -5,6 +5,7 @@ import base64
 import json
 import gzip
 import pandas as pd
+import copy
 
 
 # Settings what and where to send.
@@ -16,10 +17,14 @@ base_url = "http://localhost:8501" # Server-side (default)
 
 # Load settings
 with open(f"{case_name.lower()}_settings.toml", "rb") as f:
-    case_settings = tomllib.load(f)
-case_settings["name"] = case_name
-case_settings["starttime"] = str(case_settings["starttime"])
-case_settings["startdate"] = str(case_settings["startdate"])
+    case_settings_1 = tomllib.load(f)
+case_settings_1["name"] = case_name
+case_settings_1["starttime"] = str(case_settings_1["starttime"])
+case_settings_1["startdate"] = str(case_settings_1["startdate"])
+
+case_settings_2 = copy.deepcopy(case_settings_1)
+case_settings_2["name"] = case_settings_1["name"] + " (small jump)"
+case_settings_2["dtheta"] = 0.5
 
 
 # Load sounding
@@ -38,7 +43,8 @@ case_sounding_2["name"] = "Cabauw [13.08.21 10h]"
 
 # Merge data into JSON
 all_data = {
-    "settings": case_settings,
+    # "settings": [ case_settings_1, case_settings_2 ],
+    "settings": case_settings_1,
     "soundings": [ case_sounding_1, case_sounding_2 ],
 }
 
