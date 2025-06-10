@@ -30,6 +30,32 @@ n_maxruns = 128
 def process_selected_run():
     ss.all_runs_key = ss.selected_run
 
+    # if the first item of the form exists, all items must exist.
+    if "run_name_input" in ss:
+        del(ss.run_name_input)
+        del(ss.settings_general_runtime)
+        del(ss.settings_general_starttime)
+        del(ss.settings_general_startdate)
+        del(ss.settings_general_dt)
+        del(ss.settings_general_dt_output)
+
+        del(ss.settings_mixedlayer_h)
+        del(ss.settings_mixedlayer_beta)
+        del(ss.settings_mixedlayer_div)
+
+        del(ss.settings_temperature_theta)
+        del(ss.settings_temperature_dtheta)
+        del(ss.settings_temperature_wtheta)
+        del(ss.settings_temperature_gammatheta)
+
+        del(ss.settings_moisture_q)
+        del(ss.settings_moisture_dq)
+        del(ss.settings_moisture_wq)
+        del(ss.settings_moisture_gammaq)
+
+        del(ss.settings_fire_atmosphere_dtheta_plume)
+        del(ss.settings_fire_atmosphere_dq_plume)
+
 
 def process_clone_run():
     cloned_run = ss.all_runs_key + " (clone)"
@@ -959,6 +985,9 @@ elif ss.main_mode == MainMode.EDIT:
 
     active_run = ss.all_runs[ss.all_runs_key]
 
+    if "run_name_input" not in ss:
+        ss.run_name_input = ss.all_runs_key
+
     if "settings_general_runtime" not in ss:
         ss.settings_general_runtime = active_run.settings["runtime"]
     if "settings_general_starttime" not in ss:
@@ -999,9 +1028,6 @@ elif ss.main_mode == MainMode.EDIT:
         ss.settings_fire_atmosphere_dtheta_plume = active_run.settings["dtheta_plume"]
     if "settings_fire_atmosphere_dq_plume" not in ss:
         ss.settings_fire_atmosphere_dq_plume = active_run.settings["dq_plume"] * 1e3
-
-    # Always set the edit key to the selected run.
-    ss.run_name_input = ss.all_runs_key
 
     with st.form("edit_form", border=False):
         col1, col2, col3 = st.columns(3, vertical_alignment="bottom")
