@@ -14,7 +14,7 @@ base_url = "http://localhost:8501" # Server-side (default)
 
 # Load settings from .toml files.
 run_list = [
-    ("Ref", "default"),
+    ("Reference", "default"),
     ("Small jump", "default_small_jump"),
     ("Double flux", "default_double_flux"),
 ]
@@ -23,7 +23,6 @@ runs = []
 for name, file_name in run_list:
     with open(f"{file_name}.toml", "rb") as f:
         run = tomllib.load(f)
-    run["starttime"] = str(run["starttime"])
     run["name"] = name
 
     runs.append(run)
