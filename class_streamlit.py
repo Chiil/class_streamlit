@@ -247,7 +247,10 @@ if "c" in st.query_params:
 
                 url_settings["runtime"] = float(d["runtime"])
                 url_settings["starttime"] = datetime.time.fromisoformat(d["starttime"])
-                url_settings["startdate"] = datetime.date.fromisoformat(d["startdate"])
+                if "startdate" not in d:
+                    url_settings["startdate"] = datetime.datetime.now().date()
+                else:
+                    url_settings["startdate"] = datetime.date.fromisoformat(d["startdate"])
                 url_settings["dt"] = float(d["dt"])
                 url_settings["dt_output"] = float(d["dt_output"])
 
