@@ -1,6 +1,4 @@
 runtime = 10800.0
-# starttime = 07:00:00 if not added then 00:00
-# startdate = 2018-08-13 if not added then now in code.
 dt = 10.0
 dt_output = 300.0
 
@@ -10,7 +8,7 @@ div = 0.0
 
 theta = 300.0
 dtheta = 2.0
-wtheta = 0.1
+wtheta = 0.2
 gammatheta = 0.003
 
 q = 0.005

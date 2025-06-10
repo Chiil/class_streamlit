@@ -216,6 +216,8 @@ if "default_name" not in ss:
         ss.default_name = "Default"
         if "startdate" not in ss.default_settings:
             ss.default_settings["startdate"] = datetime.datetime.now().date()
+        if "starttime" not in ss.default_settings:
+            ss.default_settings["starttime"] = datetime.time.fromisoformat("00:00")
 
 
 # Get runs and soundings from query params and if none given initialize defaults.
@@ -246,11 +248,16 @@ if "c" in st.query_params:
                 url_settings = {}
 
                 url_settings["runtime"] = float(d["runtime"])
-                url_settings["starttime"] = datetime.time.fromisoformat(d["starttime"])
+
+                if "startdate" not in d:
+                    url_settings["starttime"] = datetime.time.fromisoformat("00:00")
+                else:
+                    url_settings["starttime"] = datetime.time.fromisoformat(d["starttime"])
                 if "startdate" not in d:
                     url_settings["startdate"] = datetime.datetime.now().date()
                 else:
                     url_settings["startdate"] = datetime.date.fromisoformat(d["startdate"])
+
                 url_settings["dt"] = float(d["dt"])
                 url_settings["dt_output"] = float(d["dt_output"])
 
