@@ -212,12 +212,12 @@ if "c" in st.query_params:
     # Get the run settings.
     if "settings" in url_data:
         try:
-            url_settings = {}
-
             ds = url_data["settings"]
 
             for d in ds:
                 run_name = d["name"]
+
+                url_settings = {}
 
                 url_settings["runtime"] = float(d["runtime"])
                 url_settings["starttime"] = datetime.time.fromisoformat(d["starttime"])
