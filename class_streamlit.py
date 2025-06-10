@@ -19,89 +19,6 @@ st.set_page_config(
 )
 
 
-if "all_soundings" not in ss:
-    ss.all_soundings = {}
-if "all_soundings_key" not in ss:
-    ss.all_soundings_key = None
-
-
-# Load the default settings from disk and override with URL settings.
-if "default_name" not in ss:
-    with open(f"default_settings.toml", "rb") as f:
-        ss.default_settings = tomllib.load(f)
-        ss.default_name = "Default"
-        if "startdate" not in ss.default_settings:
-            ss.default_settings["startdate"] = datetime.datetime.now().date()
-
-    if "c" in st.query_params:
-        compressed = base64.urlsafe_b64decode(st.query_params["c"].encode('ascii'))
-        json_str = gzip.decompress(compressed).decode('utf-8')
-        url_data = json.loads(json_str)
-
-        # Get the run settings.
-        if "settings" in url_data:
-            try:
-                url_settings = {}
-
-                d = url_data["settings"]
-
-                run_name = d["name"]
-
-                url_settings["runtime"] = float(d["runtime"])
-                url_settings["starttime"] = datetime.time.fromisoformat(d["starttime"])
-                url_settings["startdate"] = datetime.date.fromisoformat(d["startdate"])
-                url_settings["dt"] = float(d["dt"])
-                url_settings["dt_output"] = float(d["dt_output"])
-
-                url_settings["h"] = float(d["h"])
-                url_settings["beta"] = float(d["beta"])
-                url_settings["div"] = float(d["div"])
-
-                url_settings["theta"] = float(d["theta"])
-                url_settings["dtheta"] = float(d["dtheta"])
-                url_settings["wtheta"] = float(d["wtheta"])
-                url_settings["gammatheta"] = float(d["gammatheta"])
-
-                url_settings["q"] = float(d["q"])
-                url_settings["dq"] = float(d["dq"])
-                url_settings["wq"] = float(d["wq"])
-                url_settings["gammaq"] = float(d["gammaq"])
-
-                url_settings["dtheta_plume"] = float(d["dtheta_plume"])
-                url_settings["dq_plume"] = float(d["dq_plume"])
-
-                # Input is valid, overwrite the defaults.
-                ss.default_name = run_name
-                ss.default_settings = url_settings
-
-            except KeyError:
-                st.warning("The provided settings via the URL are incomplete or corrupt, reverting to default settings")
-
-
-        # Get the provided sounding.
-        if "soundings" in url_data:
-            try:
-                ds = url_data["soundings"]
-
-                for d in ds:
-                    sounding_name = d["name"]
-
-                    df = pd.DataFrame.from_dict(d)
-                    ss.all_soundings[sounding_name] = df
-
-                    if ss.all_soundings_key == None:
-                        ss.all_soundings_key = sounding_name
-                        ss.selected_sounding = ss.all_soundings_key
-
-            except KeyError:
-                st.warning("The provided sounding via the URL is incomplete or corrupt, not loaded")
-                ss.all_soundings = {}
-                ss.all_soundings_key = None
-
-
-    st.query_params.clear()
-
-
 # Set the variables to handle the plotting properly.
 streamlit_template = plotly.io.templates["streamlit"]
 color_cycle = streamlit_template.layout.colorway
@@ -266,14 +183,104 @@ def process_sounding_close():
     ss.main_mode = MainMode.PLOT
 
 
-# Deal with the state.
+# Load the default settings from disk.
+if "default_name" not in ss:
+    with open(f"default_settings.toml", "rb") as f:
+        ss.default_settings = tomllib.load(f)
+        ss.default_name = "Default"
+        if "startdate" not in ss.default_settings:
+            ss.default_settings["startdate"] = datetime.datetime.now().date()
+
+
+# Get runs and soundings from query params and if none given initialize defaults.
+if "all_runs" not in ss:
+    ss.all_runs = {}
+if "all_runs_key" not in ss:
+    ss.all_runs_key = None
+if "all_soundings" not in ss:
+    ss.all_soundings = {}
+if "all_soundings_key" not in ss:
+    ss.all_soundings_key = None
 if "available_colors" not in ss:
     ss.available_colors = [i for i in range(n_maxruns)]
-if "all_runs" not in ss:
+
+if "c" in st.query_params:
+    compressed = base64.urlsafe_b64decode(st.query_params["c"].encode('ascii'))
+    json_str = gzip.decompress(compressed).decode('utf-8')
+    url_data = json.loads(json_str)
+
+    # Get the run settings.
+    if "settings" in url_data:
+        try:
+            url_settings = {}
+
+            ds = url_data["settings"]
+
+            for d in ds:
+                run_name = d["name"]
+
+                url_settings["runtime"] = float(d["runtime"])
+                url_settings["starttime"] = datetime.time.fromisoformat(d["starttime"])
+                url_settings["startdate"] = datetime.date.fromisoformat(d["startdate"])
+                url_settings["dt"] = float(d["dt"])
+                url_settings["dt_output"] = float(d["dt_output"])
+
+                url_settings["h"] = float(d["h"])
+                url_settings["beta"] = float(d["beta"])
+                url_settings["div"] = float(d["div"])
+
+                url_settings["theta"] = float(d["theta"])
+                url_settings["dtheta"] = float(d["dtheta"])
+                url_settings["wtheta"] = float(d["wtheta"])
+                url_settings["gammatheta"] = float(d["gammatheta"])
+
+                url_settings["q"] = float(d["q"])
+                url_settings["dq"] = float(d["dq"])
+                url_settings["wq"] = float(d["wq"])
+                url_settings["gammaq"] = float(d["gammaq"])
+
+                url_settings["dtheta_plume"] = float(d["dtheta_plume"])
+                url_settings["dq_plume"] = float(d["dq_plume"])
+
+                # Input is valid, overwrite the defaults.
+                color_index = ss.available_colors.pop(0)
+                ss.all_runs[run_name] = MixedLayerModel(url_settings, color_index)
+
+                if ss.all_runs_key == None:
+                    ss.all_runs_key = run_name
+
+        except KeyError:
+            st.warning("The provided settings via the URL are incomplete or corrupt, reverting to default settings")
+
+    # Get the provided sounding.
+    if "soundings" in url_data:
+        try:
+            ds = url_data["soundings"]
+
+            for d in ds:
+                sounding_name = d["name"]
+
+                df = pd.DataFrame.from_dict(d)
+                ss.all_soundings[sounding_name] = df
+
+                if ss.all_soundings_key == None:
+                    ss.all_soundings_key = sounding_name
+                    ss.selected_sounding = ss.all_soundings_key
+
+        except KeyError:
+            st.warning("The provided sounding via the URL is incomplete or corrupt, not loaded")
+            ss.all_soundings = {}
+            ss.all_soundings_key = None
+
+st.query_params.clear()
+
+if not ss.all_runs:
     color_index = ss.available_colors.pop(0)
-    ss.all_runs = {ss.default_name: MixedLayerModel(ss.default_settings, color_index)} # Start the code with a fully run default case.
-if "all_runs_key" not in ss:
+    ss.all_runs = {ss.default_name: MixedLayerModel(ss.default_settings, color_index)}
     ss.all_runs_key = ss.default_name
+
+
+# Deal with the state.
 if "main_mode" not in ss:
     ss.main_mode = MainMode.PLOT
 if "n_plots" not in ss:

@@ -43,8 +43,7 @@ case_sounding_2["name"] = "Cabauw [13.08.21 10h]"
 
 # Merge data into JSON
 all_data = {
-    # "settings": [ case_settings_1, case_settings_2 ],
-    "settings": case_settings_1,
+    "settings": [ case_settings_1, case_settings_2 ],
     "soundings": [ case_sounding_1, case_sounding_2 ],
 }
 
