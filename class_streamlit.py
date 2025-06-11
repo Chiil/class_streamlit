@@ -111,6 +111,7 @@ def process_new_plume_plot():
 
 
 def process_delete_plot(i):
+    ss.plots_focus.remove(i)
     del(ss.all_plots[i])
 
 
@@ -561,12 +562,13 @@ if ss.main_mode == MainMode.PLOT:
     col_radio.radio("Number of columns", [1, 2, 3, 4], horizontal=True, key="plots_number")
     col_focus.pills("Focus on plots", selection_mode="multi", options=ss.all_plots, key="plots_focus")
 
+    plots_to_show = ss.plots_focus if len(ss.plots_focus) > 0 else list(ss.all_plots.keys())
+
     n = 0
     ncols = ss.plots_number
     cols = st.columns(ncols)
-    for i, plot in ss.all_plots.items():
-        if (len(ss.plots_focus) > 0) and (i not in ss.plots_focus):
-            continue
+    for i in plots_to_show:
+        plot = ss.all_plots[i]
         col = cols[n % ncols]
         n += 1
         with col.container(border=True):
