@@ -332,8 +332,8 @@ else:
             ss[f"plot_{i}_soundings"] = ss[f"plot_{i}_soundings"]
 
 # This code is need to prevent auto-cleanup by streamlit
-if "plot_numbers" in ss:
-    ss.plot_numbers = ss.plot_numbers
+if "plots_number" in ss:
+    ss.plots_number = ss.plots_number
 
 
 # Check the range of plot_times.
@@ -552,13 +552,19 @@ with st.sidebar:
 
 
 if ss.main_mode == MainMode.PLOT:
-    if "plot_numbers" not in ss:
-        ss.plot_numbers = 1
+    if "plots_number" not in ss:
+        ss.plots_number = 1
 
-    st.radio("Number of columns", [1, 2, 3, 4], horizontal=True, key="plot_numbers")
+    col_radio, col_focus = st.columns([1, 2])
+    col_radio.radio("Number of columns", [1, 2, 3, 4], horizontal=True, key="plots_number")
+    col_focus.multiselect(
+        "Focus on plots",
+        options=list(ss.all_plots.keys()),
+        key=f"plots_focus",
+    )
 
     n = 0
-    ncols = ss.plot_numbers
+    ncols = ss.plots_number
     cols = st.columns(ncols)
     for i, plot in ss.all_plots.items():
         col = cols[n % ncols]
