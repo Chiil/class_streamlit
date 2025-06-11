@@ -334,6 +334,8 @@ else:
 # This code is need to prevent auto-cleanup by streamlit
 if "plots_number" in ss:
     ss.plots_number = ss.plots_number
+if "plots_focus" in ss:
+    ss.plots_focus = ss.plots_focus
 
 
 # Check the range of plot_times.
@@ -557,16 +559,14 @@ if ss.main_mode == MainMode.PLOT:
 
     col_radio, col_focus = st.columns([1, 2])
     col_radio.radio("Number of columns", [1, 2, 3, 4], horizontal=True, key="plots_number")
-    col_focus.multiselect(
-        "Focus on plots",
-        options=list(ss.all_plots.keys()),
-        key=f"plots_focus",
-    )
+    col_focus.pills("Focus on plots", selection_mode="multi", options=ss.all_plots, key="plots_focus")
 
     n = 0
     ncols = ss.plots_number
     cols = st.columns(ncols)
     for i, plot in ss.all_plots.items():
+        if (len(ss.plots_focus) > 0) and (i not in ss.plots_focus):
+            continue
         col = cols[n % ncols]
         n += 1
         with col.container(border=True):
