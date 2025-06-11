@@ -558,9 +558,10 @@ if ss.main_mode == MainMode.PLOT:
     if "plots_number" not in ss:
         ss.plots_number = 1
 
-    col_radio, col_focus = st.columns([1, 2])
-    col_radio.radio("Number of columns", [1, 2, 3, 4], horizontal=True, key="plots_number")
-    col_focus.pills("Focus on plots", selection_mode="multi", options=ss.all_plots, key="plots_focus")
+    with st.expander("Plot settings", expanded=False):
+        col_radio, col_focus = st.columns(2)
+        col_radio.radio("Number of columns", [1, 2, 3, 4], horizontal=True, key="plots_number")
+        col_focus.pills("Focus on plots", selection_mode="multi", options=ss.all_plots, key="plots_focus")
 
     plots_to_show = ss.plots_focus if len(ss.plots_focus) > 0 else list(ss.all_plots.keys())
 
