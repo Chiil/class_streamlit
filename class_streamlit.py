@@ -111,7 +111,8 @@ def process_new_plume_plot():
 
 
 def process_delete_plot(i):
-    ss.plots_focus.remove(i)
+    if i in ss.plots_focus:
+        ss.plots_focus.remove(i)
     del(ss.all_plots[i])
 
 
