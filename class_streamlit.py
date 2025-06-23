@@ -324,7 +324,10 @@ if "main_mode" not in ss:
 if "n_plots" not in ss:
     ss.n_plots = 0
 if "all_plots" not in ss:
-    ss.all_plots = {0: LinePlot()} # Start with one line plot.
+    ss.all_plots = {}
+    process_new_line_plot()
+    process_new_profile_plot()
+    process_new_plume_plot()
 else:
     # This code is need to prevent auto-cleanup by streamlit
     for i, plot in ss.all_plots.items():
