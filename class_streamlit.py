@@ -9,6 +9,10 @@ import plotly.io
 import base64
 import json
 import gzip
+import time
+
+
+start_step = time.perf_counter()
 
 
 # Ensure that plots fill the whole page, must be first call to streamlit.
@@ -1239,3 +1243,7 @@ elif ss.main_mode == MainMode.SOUNDING:
 
         st.text_input("Sounding name", key="sounding_name_input")
         st.file_uploader("Upload a sounding .csv file", key="sounding_uploaded")
+
+
+end_step = time.perf_counter()
+print('Step: {:11.3E} (s)'.format(end_step - start_step))
