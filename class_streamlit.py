@@ -1246,4 +1246,4 @@ elif ss.main_mode == MainMode.SOUNDING:
 
 
 end_step = time.perf_counter()
-print('Step: {:11.3E} (s)'.format(end_step - start_step))
+st.write('Step: {:11.3E} (s)'.format(end_step - start_step))
