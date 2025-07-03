@@ -1078,6 +1078,50 @@ if ss.main_mode == MainMode.PLOT:
             elif isinstance(plot, SkewPlot):
                 st.subheader(f":material/partly_cloudy_day: Plot {i}")
                 fig = go.Figure()
+                p_levels = np.array([1000, 850, 700, 500, 400, 300, 250, 200, 100])
+                temp_range = np.arange(-90, 51, 10)
+
+                ## ADD BACKGROUND LINES
+                # Add isotherms (constant temperature lines)
+                for temp in temp_range:
+                    skewed_temps = [skew_transform(temp, p) for p in p_levels]
+                    fig.add_trace(go.Scatter(
+                        x=skewed_temps,
+                        y=p_levels,
+                        mode='lines',
+                        line=dict(color='red', width=0.5, dash='solid'),
+                        name=f'{temp}°C isotherm',
+                        showlegend=False,
+                        hovertemplate=f'Temperature: {temp}°C<br>Pressure: %{{y}} hPa<extra></extra>'
+                    ))
+
+                # Add dry adiabats (constant potential temperature)
+                theta_levels = np.arange(200, 500, 20)  # Potential temperature in K
+
+                for theta in theta_levels:
+                    temps = []
+                    pressures = []
+                    for p in np.logspace(2, 3, 50):  # 100 to 1000 hPa
+                        if p <= 1000:
+                            # Calculate temperature from potential temperature
+                            # θ = T * (1000/P)^0.286
+                            temp_k = theta * (p/1000)**0.286
+                            temp_c = temp_k - 273.15
+                            if -90 <= temp_c <= 50:  # Reasonable temperature range
+                                temps.append(skew_transform(temp_c, p))
+                                pressures.append(p)
+
+                    if temps:
+                        fig.add_trace(go.Scatter(
+                            x=temps,
+                            y=pressures,
+                            mode='lines',
+                            line=dict(color='green', width=0.6, dash='dash'),
+                            name=f'{theta}K dry adiabat',
+                            showlegend=False,
+                            hovertemplate=f'Dry adiabat: {theta}K<br>Pressure: %{{y:.0f}} hPa<extra></extra>'
+                        ))
+                ## FINISH BACKGROUND LINES
 
 
                 # Plot the profiles.
@@ -1095,49 +1139,6 @@ if ss.main_mode == MainMode.PLOT:
 
                         skewed_temp = [skew_transform(t, p) for t, p in zip(sounding_temp, sounding_pressure)]
                         skewed_dewpoint = [skew_transform(d, p) for d, p in zip(sounding_dewpoint, sounding_pressure)]
-
-                        p_levels = np.array([1000, 850, 700, 500, 400, 300, 250, 200, 100])
-                        temp_range = np.arange(-90, 51, 10)
-
-                        # Add isotherms (constant temperature lines)
-                        for temp in temp_range:
-                            skewed_temps = [skew_transform(temp, p) for p in p_levels]
-                            fig.add_trace(go.Scatter(
-                                x=skewed_temps,
-                                y=p_levels,
-                                mode='lines',
-                                line=dict(color='red', width=0.5, dash='solid'),
-                                name=f'{temp}°C isotherm',
-                                showlegend=False,
-                                hovertemplate=f'Temperature: {temp}°C<br>Pressure: %{{y}} hPa<extra></extra>'
-                            ))
-
-                        # Add dry adiabats (constant potential temperature)
-                        theta_levels = np.arange(200, 500, 20)  # Potential temperature in K
-
-                        for theta in theta_levels:
-                            temps = []
-                            pressures = []
-                            for p in np.logspace(2, 3, 50):  # 100 to 1000 hPa
-                                if p <= 1000:
-                                    # Calculate temperature from potential temperature
-                                    # θ = T * (1000/P)^0.286
-                                    temp_k = theta * (p/1000)**0.286
-                                    temp_c = temp_k - 273.15
-                                    if -90 <= temp_c <= 50:  # Reasonable temperature range
-                                        temps.append(skew_transform(temp_c, p))
-                                        pressures.append(p)
-
-                            if temps:
-                                fig.add_trace(go.Scatter(
-                                    x=temps,
-                                    y=pressures,
-                                    mode='lines',
-                                    line=dict(color='green', width=0.6, dash='dash'),
-                                    name=f'{theta}K dry adiabat',
-                                    showlegend=False,
-                                    hovertemplate=f'Dry adiabat: {theta}K<br>Pressure: %{{y:.0f}} hPa<extra></extra>'
-                                ))
 
                         fig.add_trace(
                             go.Scatter(
