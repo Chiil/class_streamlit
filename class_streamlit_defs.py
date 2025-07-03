@@ -343,4 +343,43 @@ def skew_transform(temp_c, pressure_hpa):
     log_p = np.log(pressure_hpa)
     skewed_temp = temp_c + skew_factor * (np.log(1000) - log_p)
     return skewed_temp
- 
+
+
+def calc_skew_lines(h, theta, dtheta, gammatheta, q, dq, gammaq, p0):
+    # Create the grid.
+    dz = 10
+    z_max = 5_000
+
+    z = np.arange(0, z_max + dz/2, dz) # Extend the grid to twice the max ABL height.
+
+    # Create the environmental profiles
+    theta_env = np.where(z < h, theta, theta + dtheta + (z - h)*gammatheta)
+    q_env = np.where(z < h, q, q + dq + (z - h)*gammaq)
+
+    print(theta_env)
+    print(q_env)
+
+    thetav_env = np.zeros_like(z)
+    p_env = np.zeros_like(z)
+    exner_env = np.zeros_like(z)
+
+    # Compute the pressure profile.
+    p_Rdcp = np.zeros_like(z)
+    p_Rdcp[0] = p0**(Rd/cp)
+    p_env[0] = p_Rdcp[0]**(cp/Rd)
+    exner_env[0] = (p_env[0]/p0)**(Rd/cp)
+
+    thetav_env[0], ql = calc_thetav(theta_env[0], q_env[0], p_env[0], exner_env[0])
+
+    for i in range(1, len(z)):
+        p_Rdcp[i] = p_Rdcp[i-1] - g/cp * p0**(Rd/cp) / thetav_env[i-1] * dz
+        p_env[i] = p_Rdcp[i]**(cp/Rd)
+        exner_env[i] = (p_env[i]/p0)**(Rd/cp)
+        thetav_env[i], ql = calc_thetav(theta_env[i], q_env[i], p_env[i], exner_env[i])
+        if ql > 0:
+            print(f"Warning, environmental profile is saturated at z = {z[i]} m")
+
+    rho_env = p_env / (Rd * exner_env * thetav_env)
+
+    return p_env / 100, exner_env * theta_env - 273.15, exner_env * theta_env - 2 - 273.15
+

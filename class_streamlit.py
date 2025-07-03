@@ -1092,7 +1092,6 @@ if ss.main_mode == MainMode.PLOT:
                         line=dict(color='red', width=0.5, dash='solid'),
                         name=f'{temp}°C isotherm',
                         showlegend=False,
-                        # hovertemplate=f'Temperature: {temp}°C<br>Pressure: %{{y}} hPa<extra></extra>'
                         hoverinfo="none",
                     ))
 
@@ -1120,7 +1119,6 @@ if ss.main_mode == MainMode.PLOT:
                             line=dict(color='green', width=0.6, dash='dash'),
                             name=f'{theta}K dry adiabat',
                             showlegend=False,
-                            # hovertemplate=f'Dry adiabat: {theta}K<br>Pressure: %{{y:.0f}} hPa<extra></extra>'
                             hoverinfo="none",
                         ))
                 ## FINISH BACKGROUND LINES
@@ -1135,9 +1133,24 @@ if ss.main_mode == MainMode.PLOT:
                     if time_plot <= run.runtime:
                         idx = round(time_plot / run.dt_output)
 
-                        sounding_pressure = np.array([1000, 925, 850, 700, 500, 400, 300, 250, 200])
-                        sounding_temp = np.array([15, 12, 8, 2, -18, -28, -42, -48, -56])
-                        sounding_dewpoint = np.array([12, 8, 4, -2, -25, -35, -50, -58, -66])
+                        # sounding_pressure = np.array([1000, 925, 850, 700, 500, 400, 300, 250, 200])
+                        # sounding_temp = np.array([15, 12, 8, 2, -18, -28, -42, -48, -56])
+                        # sounding_dewpoint = np.array([12, 8, 4, -2, -25, -35, -50, -58, -66])
+
+                        sounding_pressure, sounding_temp, sounding_dewpoint = calc_skew_lines(
+                            run.output.h[idx],
+                            run.output.theta[idx],
+                            run.output.dtheta[idx],
+                            run.gammatheta,
+                            run.output.q[idx] * 1e-3,
+                            run.output.dq[idx] * 1e-3,
+                            run.gammaq,
+                            1e5,
+                        )
+
+                        print(sounding_pressure)
+                        print(sounding_temp)
+                        print(sounding_dewpoint)
 
                         skewed_temp = [skew_transform(t, p) for t, p in zip(sounding_temp, sounding_pressure)]
                         skewed_dewpoint = [skew_transform(d, p) for d, p in zip(sounding_dewpoint, sounding_pressure)]
