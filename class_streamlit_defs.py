@@ -356,9 +356,6 @@ def calc_skew_lines(h, theta, dtheta, gammatheta, q, dq, gammaq, p0):
     theta_env = np.where(z < h, theta, theta + dtheta + (z - h)*gammatheta)
     q_env = np.where(z < h, q, q + dq + (z - h)*gammaq)
 
-    print(theta_env)
-    print(q_env)
-
     thetav_env = np.zeros_like(z)
     p_env = np.zeros_like(z)
     exner_env = np.zeros_like(z)
@@ -381,5 +378,10 @@ def calc_skew_lines(h, theta, dtheta, gammatheta, q, dq, gammaq, p0):
 
     rho_env = p_env / (Rd * exner_env * thetav_env)
 
-    return p_env / 100, exner_env * theta_env - 273.15, exner_env * theta_env - 2 - 273.15
+    T_env = exner_env * theta_env - 273.15 # In Celcius
+    w_env = q_env / (1.0 - q_env)
+    e_env = (w_env * p_env) / (0.622 + w_env)
+    Td_env = (243.12 * np.log(e_env/611.2)) / (17.62 - np.log(e_env/611.2))
+
+    return p_env / 100, T_env, Td_env
 

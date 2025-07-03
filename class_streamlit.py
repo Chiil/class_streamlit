@@ -1133,10 +1133,6 @@ if ss.main_mode == MainMode.PLOT:
                     if time_plot <= run.runtime:
                         idx = round(time_plot / run.dt_output)
 
-                        # sounding_pressure = np.array([1000, 925, 850, 700, 500, 400, 300, 250, 200])
-                        # sounding_temp = np.array([15, 12, 8, 2, -18, -28, -42, -48, -56])
-                        # sounding_dewpoint = np.array([12, 8, 4, -2, -25, -35, -50, -58, -66])
-
                         sounding_pressure, sounding_temp, sounding_dewpoint = calc_skew_lines(
                             run.output.h[idx],
                             run.output.theta[idx],
@@ -1148,10 +1144,6 @@ if ss.main_mode == MainMode.PLOT:
                             1e5,
                         )
 
-                        print(sounding_pressure)
-                        print(sounding_temp)
-                        print(sounding_dewpoint)
-
                         skewed_temp = [skew_transform(t, p) for t, p in zip(sounding_temp, sounding_pressure)]
                         skewed_dewpoint = [skew_transform(d, p) for d, p in zip(sounding_dewpoint, sounding_pressure)]
 
@@ -1159,7 +1151,7 @@ if ss.main_mode == MainMode.PLOT:
                             go.Scatter(
                                 x=skewed_temp,
                                 y=sounding_pressure,
-                                mode="lines+markers",
+                                mode="lines",
                                 line=dict(color=color_cycle[run.color_index % len(color_cycle)]),
                                 name=f"{run_name} (T)",
                                 hovertemplate='Temperature: %{customdata}°C<br>Pressure: %{y} hPa<extra></extra>',
@@ -1171,7 +1163,7 @@ if ss.main_mode == MainMode.PLOT:
                             go.Scatter(
                                 x=skewed_dewpoint,
                                 y=sounding_pressure,
-                                mode='lines+markers',
+                                mode='lines',
                                 name=f"{run_name} (Td)",
                                 # showlegend=False,
                                 line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
