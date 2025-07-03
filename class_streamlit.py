@@ -1091,8 +1091,10 @@ if ss.main_mode == MainMode.PLOT:
 
                         sounding_pressure = np.array([1000, 925, 850, 700, 500, 400, 300, 250, 200])
                         sounding_temp = np.array([15, 12, 8, 2, -18, -28, -42, -48, -56])
+                        sounding_dewpoint = np.array([12, 8, 4, -2, -25, -35, -50, -58, -66])
 
                         skewed_temp = [skew_transform(t, p) for t, p in zip(sounding_temp, sounding_pressure)]
+                        skewed_dewpoint = [skew_transform(d, p) for d, p in zip(sounding_dewpoint, sounding_pressure)]
 
                         p_levels = np.array([1000, 850, 700, 500, 400, 300, 250, 200, 100])
                         temp_range = np.arange(-90, 51, 10)
@@ -1112,7 +1114,7 @@ if ss.main_mode == MainMode.PLOT:
 
                         # Add dry adiabats (constant potential temperature)
                         theta_levels = np.arange(200, 500, 20)  # Potential temperature in K
-                        
+
                         for theta in theta_levels:
                             temps = []
                             pressures = []
@@ -1125,7 +1127,7 @@ if ss.main_mode == MainMode.PLOT:
                                     if -90 <= temp_c <= 50:  # Reasonable temperature range
                                         temps.append(skew_transform(temp_c, p))
                                         pressures.append(p)
-                            
+
                             if temps:
                                 fig.add_trace(go.Scatter(
                                     x=temps,
@@ -1136,23 +1138,31 @@ if ss.main_mode == MainMode.PLOT:
                                     showlegend=False,
                                     hovertemplate=f'Dry adiabat: {theta}K<br>Pressure: %{{y:.0f}} hPa<extra></extra>'
                                 ))
- 
-                        x_plot = skewed_temp
-                        z_plot = sounding_pressure
 
                         fig.add_trace(
                             go.Scatter(
-                                x=x_plot,
-                                y=z_plot,
+                                x=skewed_temp,
+                                y=sounding_pressure,
                                 mode="lines+markers",
-                                showlegend=False,
                                 line=dict(color=color_cycle[run.color_index % len(color_cycle)]),
-                                name='Temperature',
+                                name=f"{run_name} (T)",
                                 hovertemplate='Temperature: %{customdata}°C<br>Pressure: %{y} hPa<extra></extra>',
                                 customdata=sounding_temp
                             )
                         )
-
+                        
+                        fig.add_trace(
+                            go.Scatter(
+                                x=skewed_dewpoint,
+                                y=sounding_pressure,
+                                mode='lines+markers',
+                                name=f"{run_name} (Td)",
+                                # showlegend=False,
+                                line=dict(color=color_cycle[run.color_index % len(color_cycle)], dash="dot"),
+                                hovertemplate='Dewpoint: %{customdata}°C<br>Pressure: %{y} hPa<extra></extra>',
+                                customdata=sounding_dewpoint
+                        ))
+ 
                 # for sounding_name in ss[f"plot_{i}_soundings"]:
                 #     sounding_df = ss.all_soundings[sounding_name]
 
