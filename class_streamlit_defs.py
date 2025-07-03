@@ -203,7 +203,7 @@ class MixedLayerModel:
         )
 
 
-    def launch_entraining_plume(self, time, fire_multiplier):
+    def launch_entraining_plume(self, time, fire_multiplier, skewt=False):
         idx = round(time / self.dt_output)
 
         theta = self.output.theta[idx]
@@ -298,7 +298,10 @@ class MixedLayerModel:
             if (area_plume[i] <= 0) or (w_plume[i] < w_eps):
                 break
 
-        return theta_plume[:i], q_plume[:i] * 1e3, thetav_plume[:i], type_plume[:i], z[:i]
+        if skewt:
+            return exner_env[:i] * theta_plume[:i] - 273.15, type_plume[:i], p_env[:i] / 100.0
+        else:
+            return theta_plume[:i], q_plume[:i] * 1e3, thetav_plume[:i], type_plume[:i], z[:i]
 
 
 class LinePlot:

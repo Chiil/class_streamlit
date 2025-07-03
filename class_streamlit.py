@@ -1170,7 +1170,52 @@ if ss.main_mode == MainMode.PLOT:
                                 hovertemplate='Dewpoint: %{customdata}°C<br>Pressure: %{y} hPa<extra></extra>',
                                 customdata=sounding_dewpoint
                         ))
- 
+
+
+                        ss[f"plot_{i}_fire"].sort()
+
+                        for fire_label in ss[f"plot_{i}_fire"]:
+                            if fire_label == "0.25 x":
+                                fac_fire = 0.25
+                                color = "#781c6d"
+                            elif fire_label == "0.5 x":
+                                fac_fire = 0.5
+                                color = "#bc3754"
+                            elif fire_label == "1 x":
+                                fac_fire = 1.0
+                                color = "#dd513a"
+                            elif fire_label == "2 x":
+                                fac_fire = 2.0
+                                color = "#f37819"
+                            elif fire_label == "4 x":
+                                fac_fire = 4.0
+                                color = "#fca50a"
+
+                            x_plot, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire, True)
+                            x_plot = [skew_transform(t, p) for t, p in zip(x_plot, z_plot)]
+
+                            marker_sizes = np.zeros_like(z_plot)
+                            marker_sizes[::5] = np.where(type_plume[::5] > 0, 5, marker_sizes[::5])
+                            marker_sizes[0], marker_sizes[-1] = 5, 5
+
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=x_plot,
+                                    y=z_plot,
+                                    mode="lines+markers",
+                                    showlegend=True,
+                                    name=f"🔥 {fire_label}",
+                                    line=dict(
+                                        color=color,
+                                        width=1.5,
+                                        ),
+                                    marker=dict(
+                                        color=color,
+                                        size=marker_sizes,
+                                        )
+                                )
+                            )
+
                 # for sounding_name in ss[f"plot_{i}_soundings"]:
                 #     sounding_df = ss.all_soundings[sounding_name]
 
