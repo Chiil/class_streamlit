@@ -114,6 +114,11 @@ def process_new_plume_plot():
     ss.all_plots[ss.n_plots] = PlumePlot()
 
 
+def process_new_skew_plot():
+    ss.n_plots += 1
+    ss.all_plots[ss.n_plots] = SkewPlot()
+
+
 def process_delete_plot(i):
     if i in ss.plots_focus:
         ss.plots_focus.remove(i)
@@ -329,9 +334,7 @@ if "n_plots" not in ss:
     ss.n_plots = 0
 if "all_plots" not in ss:
     ss.all_plots = {}
-    process_new_line_plot()
-    process_new_profile_plot()
-    process_new_plume_plot()
+    process_new_skew_plot()
 else:
     # This code is need to prevent auto-cleanup by streamlit
     for i, plot in ss.all_plots.items():
@@ -375,7 +378,7 @@ with st.sidebar:
     st.divider()
 
     st.header("Plots")
-    new_line_plot, new_profile_plot, new_fire_plot = st.columns(3)
+    new_line_plot, new_profile_plot, new_fire_plot, new_skew_plot = st.columns(4)
     new_line_plot.button(
         "",
         help="New timeseries plot",
@@ -394,6 +397,12 @@ with st.sidebar:
         icon=":material/local_fire_department:",
         use_container_width=True,
         on_click=process_new_plume_plot)
+    new_skew_plot.button(
+        "",
+        help="New skew-T-log-p plot",
+        icon=":material/partly_cloudy_day:",
+        use_container_width=True,
+        on_click=process_new_skew_plot)
 
     for i, plot in ss.all_plots.items():
         if isinstance(plot, LinePlot):
@@ -541,6 +550,59 @@ with st.sidebar:
                     key=f"plot_{i}_soundings",
                 )
 
+        elif isinstance(plot, SkewPlot):
+            if f"plot_{i}_runs" not in ss:
+                ss[f"plot_{i}_runs"] = [ss.all_runs_key]
+            if f"plot_{i}_soundings" not in ss:
+                ss[f"plot_{i}_soundings"] = []
+
+            if f"plot_{i}_time" in ss:
+                plot.time_plot = ss[f"plot_{i}_time"]
+
+            plot.selected_runs = ss[f"plot_{i}_runs"]
+
+            with st.container(border=True):
+                col1, col2 = st.columns([2, 1])
+                col1.header(f":material/partly_cloudy_day: Plot {i}")
+                col2.button(
+                    "",
+                    icon=":material/delete:",
+                    use_container_width=True,
+                    key=f"plot_{i}_delete",
+                    on_click=process_delete_plot,
+                    args=(i,)
+                )
+
+                # Prevent the slider to select a value that does not exist.
+                if not ss[f"plot_{i}_runs"]:
+                    time_max = 1.0
+                    time_plot = (0.0, 1.0)
+                else:
+                    time_max = ss.all_runs[ss[f"plot_{i}_runs"][0]].output.time.values[-1]
+                    time_plot = (0.0 if plot.time_plot[0] > time_max else plot.time_plot[0], min(time_max, plot.time_plot[1]))
+
+                st.slider("Time", 0.0, time_max, time_plot, 0.25, key=f"plot_{i}_time")
+
+                st.multiselect(
+                    "Runs to plot",
+                    options=list(ss.all_runs.keys()),
+                    key=f"plot_{i}_runs",
+                )
+
+                if f"plot_{i}_fire" not in ss:
+                    ss[f"plot_{i}_fire"] = ["1 x"]
+
+                st.pills(
+                    "🔥 Fire multiplier",
+                    ["0.25 x", "0.5 x", "1 x", "2 x", "4 x"],
+                    selection_mode="multi",
+                    key=f"plot_{i}_fire")
+
+                st.multiselect(
+                    "Soundings to plot",
+                    options=list(ss.all_soundings.keys()),
+                    key=f"plot_{i}_soundings",
+                )
 
     st.divider()
 
@@ -1011,6 +1073,123 @@ if ss.main_mode == MainMode.PLOT:
                     yaxis_tickfont_size=plot_font_size,
                     legend_font_size=plot_font_size,
                 )
+                st.plotly_chart(fig, key=f"plot_{i}_plotly")
+
+            elif isinstance(plot, SkewPlot):
+                st.subheader(f":material/partly_cloudy_day: Plot {i}")
+                fig = go.Figure()
+
+
+                # Plot the profiles.
+                for run_name in plot.selected_runs:
+                    run = ss.all_runs[run_name]
+
+                    # Plot the reference state
+                    time_plot = plot.time_plot[0] * 3600
+                    if time_plot <= run.runtime:
+                        idx = round(time_plot / run.dt_output)
+
+                        sounding_pressure = np.array([1000, 925, 850, 700, 500, 400, 300, 250, 200])
+                        sounding_temp = np.array([15, 12, 8, 2, -18, -28, -42, -48, -56])
+
+                        skewed_temp = [skew_transform(t, p) for t, p in zip(sounding_temp, sounding_pressure)]
+
+                        p_levels = np.array([1000, 850, 700, 500, 400, 300, 250, 200, 100])
+                        temp_range = np.arange(-90, 51, 10)
+
+                        # Add isotherms (constant temperature lines)
+                        for temp in temp_range:
+                            skewed_temps = [skew_transform(temp, p) for p in p_levels]
+                            fig.add_trace(go.Scatter(
+                                x=skewed_temps,
+                                y=p_levels,
+                                mode='lines',
+                                line=dict(color='red', width=0.5, dash='solid'),
+                                name=f'{temp}°C isotherm',
+                                showlegend=False,
+                                hovertemplate=f'Temperature: {temp}°C<br>Pressure: %{{y}} hPa<extra></extra>'
+                            ))
+
+                        # Add dry adiabats (constant potential temperature)
+                        theta_levels = np.arange(200, 500, 20)  # Potential temperature in K
+                        
+                        for theta in theta_levels:
+                            temps = []
+                            pressures = []
+                            for p in np.logspace(2, 3, 50):  # 100 to 1000 hPa
+                                if p <= 1000:
+                                    # Calculate temperature from potential temperature
+                                    # θ = T * (1000/P)^0.286
+                                    temp_k = theta * (p/1000)**0.286
+                                    temp_c = temp_k - 273.15
+                                    if -90 <= temp_c <= 50:  # Reasonable temperature range
+                                        temps.append(skew_transform(temp_c, p))
+                                        pressures.append(p)
+                            
+                            if temps:
+                                fig.add_trace(go.Scatter(
+                                    x=temps,
+                                    y=pressures,
+                                    mode='lines',
+                                    line=dict(color='green', width=0.6, dash='dash'),
+                                    name=f'{theta}K dry adiabat',
+                                    showlegend=False,
+                                    hovertemplate=f'Dry adiabat: {theta}K<br>Pressure: %{{y:.0f}} hPa<extra></extra>'
+                                ))
+ 
+                        x_plot = skewed_temp
+                        z_plot = sounding_pressure
+
+                        fig.add_trace(
+                            go.Scatter(
+                                x=x_plot,
+                                y=z_plot,
+                                mode="lines+markers",
+                                showlegend=False,
+                                line=dict(color=color_cycle[run.color_index % len(color_cycle)]),
+                                name='Temperature',
+                                hovertemplate='Temperature: %{customdata}°C<br>Pressure: %{y} hPa<extra></extra>',
+                                customdata=sounding_temp
+                            )
+                        )
+
+                # for sounding_name in ss[f"plot_{i}_soundings"]:
+                #     sounding_df = ss.all_soundings[sounding_name]
+
+                #     if plot.xaxis_key not in sounding_df.columns:
+                #         st.toast(f"Requested variable \"{plot.xaxis_key}\" is not in sounding \"{sounding_name}\"")
+
+                #     else:
+                #         fig.add_trace(
+                #             go.Scatter(
+                #                 x=sounding_df[plot.xaxis_key],
+                #                 y=sounding_df["z"],
+                #                 mode="markers",
+                #                 showlegend=True,
+                #                 name=sounding_name,
+                #                 marker=dict(
+                #                     color="black",
+                #                     symbol="cross",
+                #                     size=3,
+                #                     )
+                #             )
+                #         )
+
+                fig.update_layout(
+                    margin={"t": 50, "l": 0, "b": 0, "r": 0},
+                    xaxis_title="temperature (°C)",
+                    yaxis_title="p (hPa)",
+                    yaxis_type="log",
+                    xaxis_range = [-40, 50],
+                    yaxis_range = [np.log10(1040), np.log10(190)],
+                    yaxis_autorange=False,
+                    xaxis_title_font_size=plot_font_size,
+                    xaxis_tickfont_size=plot_font_size,
+                    yaxis_title_font_size=plot_font_size,
+                    yaxis_tickfont_size=plot_font_size,
+                    legend_font_size=plot_font_size,
+                )
+
                 st.plotly_chart(fig, key=f"plot_{i}_plotly")
 
 

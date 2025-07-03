@@ -328,3 +328,19 @@ class PlumePlot:
         self.xaxis_key = self.xaxis_options[0]
         self.time_plot = (0.0, 1.0)
         self.selected_runs = []
+
+
+class SkewPlot:
+    def __init__(self):
+        self.time_plot = (0.0, 1.0)
+        self.selected_runs = []
+
+
+# Transform function for skewing
+def skew_transform(temp_c, pressure_hpa):
+    # Skewing factor - adjust this to change the skew angle
+    skew_factor = 30  # degrees
+    log_p = np.log(pressure_hpa)
+    skewed_temp = temp_c + skew_factor * (np.log(1000) - log_p)
+    return skewed_temp
+ 
