@@ -1092,7 +1092,8 @@ if ss.main_mode == MainMode.PLOT:
                         line=dict(color='red', width=0.5, dash='solid'),
                         name=f'{temp}°C isotherm',
                         showlegend=False,
-                        hovertemplate=f'Temperature: {temp}°C<br>Pressure: %{{y}} hPa<extra></extra>'
+                        # hovertemplate=f'Temperature: {temp}°C<br>Pressure: %{{y}} hPa<extra></extra>'
+                        hoverinfo="none",
                     ))
 
                 # Add dry adiabats (constant potential temperature)
@@ -1119,7 +1120,8 @@ if ss.main_mode == MainMode.PLOT:
                             line=dict(color='green', width=0.6, dash='dash'),
                             name=f'{theta}K dry adiabat',
                             showlegend=False,
-                            hovertemplate=f'Dry adiabat: {theta}K<br>Pressure: %{{y:.0f}} hPa<extra></extra>'
+                            # hovertemplate=f'Dry adiabat: {theta}K<br>Pressure: %{{y:.0f}} hPa<extra></extra>'
+                            hoverinfo="none",
                         ))
                 ## FINISH BACKGROUND LINES
 
