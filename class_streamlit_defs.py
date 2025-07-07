@@ -335,7 +335,7 @@ class PlumePlot:
 
 class SkewPlot:
     def __init__(self):
-        self.time_plot = (0.0, 1.0)
+        self.time_plot = 0.0
         self.selected_runs = []
 
 

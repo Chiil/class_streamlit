@@ -578,10 +578,10 @@ with st.sidebar:
                 # Prevent the slider to select a value that does not exist.
                 if not ss[f"plot_{i}_runs"]:
                     time_max = 1.0
-                    time_plot = (0.0, 1.0)
+                    time_plot = 0.0
                 else:
                     time_max = ss.all_runs[ss[f"plot_{i}_runs"][0]].output.time.values[-1]
-                    time_plot = (0.0 if plot.time_plot[0] > time_max else plot.time_plot[0], min(time_max, plot.time_plot[1]))
+                    time_plot = plot.time_plot
 
                 st.slider("Time", 0.0, time_max, time_plot, 0.25, key=f"plot_{i}_time")
 
@@ -1130,8 +1130,8 @@ if ss.main_mode == MainMode.PLOT:
                 for run_name in plot.selected_runs:
                     run = ss.all_runs[run_name]
 
-                    # Plot the reference state
-                    time_plot = plot.time_plot[0] * 3600
+                    # Plot the sounding.
+                    time_plot = plot.time_plot * 3600
                     if time_plot <= run.runtime:
                         idx = round(time_plot / run.dt_output)
 
