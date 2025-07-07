@@ -348,6 +348,8 @@ if "plots_number" in ss:
     ss.plots_number = ss.plots_number
 if "plots_focus" in ss:
     ss.plots_focus = ss.plots_focus
+if "run_name_input" in ss:
+    ss.run_name_input = ss.run_name_input
 
 
 # Check the range of plot_times.
@@ -1158,7 +1160,7 @@ if ss.main_mode == MainMode.PLOT:
                                 customdata=sounding_temp
                             )
                         )
-                        
+
                         fig.add_trace(
                             go.Scatter(
                                 x=skewed_dewpoint,
