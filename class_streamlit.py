@@ -1246,7 +1246,7 @@ if ss.main_mode == MainMode.PLOT:
                     yaxis_title="p (hPa)",
                     yaxis_type="log",
                     xaxis_range = [-40, 50],
-                    yaxis_range = [np.log10(1040), np.log10(190)],
+                    yaxis_range = [np.log10(1040), np.log10(490)],
                     yaxis_autorange=False,
                     xaxis_title_font_size=plot_font_size,
                     xaxis_tickfont_size=plot_font_size,
@@ -1490,4 +1490,4 @@ elif ss.main_mode == MainMode.SOUNDING:
 
 
 end_step = time.perf_counter()
-st.write('Step: {:11.3E} (s)'.format(end_step - start_step))
+st.write("Total rendering time: {:11.3E} (s)".format(end_step - start_step))
