@@ -12,47 +12,6 @@ import gzip
 import time
 
 
-# Updated CSS for latest Streamlit version
-st.markdown("""
-<style>
-    /* Target the new Streamlit column structure */
-    [data-testid="column"] {
-        width: calc(33.333% - 0.5rem) !important;
-        flex: 1 1 calc(33.333% - 0.5rem) !important;
-        min-width: 0 !important;
-    }
-    
-    /* Force horizontal layout on all screen sizes */
-    .stHorizontalBlock {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 0.5rem !important;
-    }
-    
-    /* Override mobile responsive behavior */
-    @media (max-width: 768px) {
-        [data-testid="column"] {
-            width: calc(33.333% - 0.5rem) !important;
-            flex: 1 1 calc(33.333% - 0.5rem) !important;
-        }
-        
-        .stHorizontalBlock {
-            flex-direction: row !important;
-        }
-    }
-    
-    /* Make buttons more compact on mobile */
-    @media (max-width: 640px) {
-        [data-testid="column"] button {
-            padding: 0.25rem !important;
-            min-height: 2.5rem !important;
-        }
-    }
-</style>
-""", unsafe_allow_html=True)
-
-
 start_step = time.perf_counter()
 
 
