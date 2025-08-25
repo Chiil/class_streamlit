@@ -12,6 +12,35 @@ import gzip
 import time
 
 
+# Custom CSS to keep button columns side-by-side on mobile
+st.markdown("""
+<style>
+    /* Force columns to stay horizontal on mobile */
+    div[data-testid="column"] {
+        width: calc(33.333% - 1rem) !important;
+        flex: 1 1 calc(33.333% - 1rem) !important;
+        min-width: 0 !important;
+    }
+
+    /* Ensure the column container stays horizontal */
+    .stColumns {
+        display: flex !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        gap: 1rem;
+    }
+
+    /* Make buttons smaller on mobile if needed */
+    @media (max-width: 768px) {
+        div[data-testid="column"] button {
+            padding: 0.25rem !important;
+            min-height: 2rem !important;
+        }
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 start_step = time.perf_counter()
 
 
