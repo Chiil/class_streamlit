@@ -12,29 +12,41 @@ import gzip
 import time
 
 
-# Custom CSS to keep button columns side-by-side on mobile
+# Updated CSS for latest Streamlit version
 st.markdown("""
 <style>
-    /* Force columns to stay horizontal on mobile */
-    div[data-testid="column"] {
-        width: calc(33.333% - 1rem) !important;
-        flex: 1 1 calc(33.333% - 1rem) !important;
+    /* Target the new Streamlit column structure */
+    [data-testid="column"] {
+        width: calc(33.333% - 0.5rem) !important;
+        flex: 1 1 calc(33.333% - 0.5rem) !important;
         min-width: 0 !important;
     }
-
-    /* Ensure the column container stays horizontal */
-    .stColumns {
+    
+    /* Force horizontal layout on all screen sizes */
+    .stHorizontalBlock {
         display: flex !important;
         flex-direction: row !important;
-        width: 100% !important;
-        gap: 1rem;
+        flex-wrap: nowrap !important;
+        gap: 0.5rem !important;
     }
-
-    /* Make buttons smaller on mobile if needed */
+    
+    /* Override mobile responsive behavior */
     @media (max-width: 768px) {
-        div[data-testid="column"] button {
+        [data-testid="column"] {
+            width: calc(33.333% - 0.5rem) !important;
+            flex: 1 1 calc(33.333% - 0.5rem) !important;
+        }
+        
+        .stHorizontalBlock {
+            flex-direction: row !important;
+        }
+    }
+    
+    /* Make buttons more compact on mobile */
+    @media (max-width: 640px) {
+        [data-testid="column"] button {
             padding: 0.25rem !important;
-            min-height: 2rem !important;
+            min-height: 2.5rem !important;
         }
     }
 </style>
