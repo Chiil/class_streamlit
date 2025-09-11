@@ -12,7 +12,7 @@ import gzip
 import time
 
 
-start_step = time.perf_counter()
+# start_step = time.perf_counter()
 
 
 # Ensure that plots fill the whole page, must be first call to streamlit.
@@ -1489,5 +1489,5 @@ elif ss.main_mode == MainMode.SOUNDING:
         st.file_uploader("Upload a sounding .csv file", key="sounding_uploaded")
 
 
-end_step = time.perf_counter()
-st.write("Total rendering time: {:11.3E} (s)".format(end_step - start_step))
+# end_step = time.perf_counter()
+# st.write("Total rendering time: {:11.3E} (s)".format(end_step - start_step))
