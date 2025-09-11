@@ -334,7 +334,7 @@ if "n_plots" not in ss:
     ss.n_plots = 0
 if "all_plots" not in ss:
     ss.all_plots = {}
-    process_new_skew_plot()
+    process_new_line_plot()
 else:
     # This code is need to prevent auto-cleanup by streamlit
     for i, plot in ss.all_plots.items():
