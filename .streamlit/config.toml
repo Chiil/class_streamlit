@@ -1,6 +1,6 @@
 [theme]
 baseFontSize = 14
-font = "Source Sans Pro"
+# font = "Source Sans Pro"
 
 [server]
 runOnSave = true
