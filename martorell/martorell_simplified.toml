@@ -1,0 +1,22 @@
+runtime = 36000.0
+starttime = 08:00:00
+startdate = 2021-07-13
+dt = 10.0
+dt_output = 300.0
+
+h = 200.0
+beta = 0.2
+div = 0.0
+
+theta = 294.0
+dtheta = 2.0
+wtheta = 0.15
+gammatheta = 0.003
+
+q = 0.007
+dq = -0.0005
+wq = 5e-5
+gammaq = -2e-7
+
+dtheta_plume = 1.0
+dq_plume = 0.001
