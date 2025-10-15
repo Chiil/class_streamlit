@@ -25,9 +25,14 @@ class MainMode(Enum):
     SOUNDING = auto()
 
 
-def virtual_temperature(t, qt, ql):
-    tv = t * (1.0 - (1.0 - Rv/Rd) * qt - Rv/Rd * ql)
-    return tv
+def virtual_temperature(T, qt, ql):
+    Tv = T * (1.0 - (1.0 - Rv/Rd) * qt - Rv/Rd * ql)
+    return Tv
+
+
+def calc_thetav_dry(theta, qt, ql):
+    thetav = theta * (1.0 - (1.0 - Rv/Rd) * qt)
+    return thetav
 
 
 def esat_liq(t):
@@ -56,7 +61,7 @@ def calc_thetav(thl, qt, p, exner):
     ql = 0.0
 
     if qt - qsat <= 0.0:
-        return virtual_temperature(thl, qt, 0.0), ql
+        return virtual_temperature(tl, qt, 0.0) / exner, ql
 
     # Solve the adjustment problem.
     niter = 0
@@ -74,7 +79,7 @@ def calc_thetav(thl, qt, p, exner):
         tnr -= f / f_prime
 
     ql = qt - qsat
-    return virtual_temperature(tnr/exner, qt, ql), ql
+    return virtual_temperature(tnr, qt, ql) / exner, ql
 
 
 class MixedLayerModel:
@@ -121,8 +126,8 @@ class MixedLayerModel:
     def step(self):
         # First, compute the growth, assume no condensation in virtual temp calculations.
         wthetav = self.wtheta * (1.0 + (Rv/Rd - 1.0) * self.q) + (Rv/Rd - 1.0) * self.theta * self.wq
-        thetav = virtual_temperature(self.theta, self.q, 0.0)
-        dthetav = virtual_temperature(self.theta + self.dtheta, self.q + self.dq, 0.0) - thetav
+        thetav = calc_thetav_dry(self.theta, self.q, 0.0)
+        dthetav = calc_thetav_dry(self.theta + self.dtheta, self.q + self.dq, 0.0) - thetav
 
         we = self.beta * wthetav / dthetav
         ws = - self.h * self.div
@@ -169,8 +174,8 @@ class MixedLayerModel:
         output.dtheta[0] = self.dtheta
         output.q[0] = self.q
         output.dq[0] = self.dq
-        output.thetav[0] = virtual_temperature(self.theta, self.q, 0.0)
-        output.dthetav[0] = virtual_temperature(self.theta + self.dtheta, self.q + self.dq, 0.0) - output.thetav[0]
+        output.thetav[0] = calc_thetav_dry(self.theta, self.q, 0.0)
+        output.dthetav[0] = calc_thetav_dry(self.theta + self.dtheta, self.q + self.dq, 0.0) - output.thetav[0]
 
         for i in range(1, nt+1):
             self.step()
@@ -183,8 +188,8 @@ class MixedLayerModel:
                 output.dtheta[ii] = self.dtheta
                 output.q[ii] = self.q
                 output.dq[ii] = self.dq
-                output.thetav[ii] = virtual_temperature(self.theta, self.q, 0.0)
-                output.dthetav[ii] = virtual_temperature(self.theta + self.dtheta, self.q + self.dq, 0.0) - output.thetav[ii]
+                output.thetav[ii] = calc_thetav_dry(self.theta, self.q, 0.0)
+                output.dthetav[ii] = calc_thetav_dry(self.theta + self.dtheta, self.q + self.dq, 0.0) - output.thetav[ii]
 
         full_datetime = datetime.datetime.combine(self.startdate, self.starttime)
         output.datetime_utc = [ (full_datetime + datetime.timedelta(hours=time)) for time in output.time ]
