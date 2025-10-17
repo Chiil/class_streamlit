@@ -883,6 +883,9 @@ if ss.main_mode == MainMode.PLOT:
                                     virtual_temperature(theta + dtheta + gammatheta*(h_max-h), q + dq + gammaq*(h_max-h), 0.0)
                                 ]
 
+                            elif plot.xaxis_key == "w":
+                                x_plot = np.array([np.nan, np.nan, np.nan, np.nan])
+
                             z_plot = [0, h, h, h_max]
 
                             fig.add_trace(
@@ -916,11 +919,14 @@ if ss.main_mode == MainMode.PLOT:
                                     color = "#fca50a"
 
                                 if plot.xaxis_key == "theta":
-                                    x_plot, _, _, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                    x_plot, _, _, type_plume, z_plot, _ = run.launch_entraining_plume(time_plot, fac_fire)
                                 elif plot.xaxis_key == "q":
-                                    _, x_plot, _, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                    _, x_plot, _, type_plume, z_plot, _ = run.launch_entraining_plume(time_plot, fac_fire)
                                 elif plot.xaxis_key == "thetav":
-                                    _, _, x_plot, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                    _, _, x_plot, type_plume, z_plot, _ = run.launch_entraining_plume(time_plot, fac_fire)
+                                elif plot.xaxis_key == "w":
+                                    _, _, _, type_plume, z_plot, x_plot = run.launch_entraining_plume(time_plot, fac_fire)
+
 
                                 marker_sizes = np.zeros_like(z_plot)
                                 marker_sizes[::5] = np.where(type_plume[::5] > 0, 5, marker_sizes[::5])
@@ -981,6 +987,9 @@ if ss.main_mode == MainMode.PLOT:
                                 virtual_temperature(theta + dtheta + gammatheta*(h_max-h), q + dq + gammaq*(h_max-h), 0.0)
                             ]
 
+                        elif plot.xaxis_key == "w":
+                            x_plot = np.array([np.nan, np.nan, np.nan, np.nan])
+
                         z_plot = [0, h, h, h_max]
 
                         fig.add_trace(
@@ -1014,11 +1023,13 @@ if ss.main_mode == MainMode.PLOT:
                                 color = "#fca50a"
 
                             if plot.xaxis_key == "theta":
-                                x_plot, _, _, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                x_plot, _, _, type_plume, z_plot, _ = run.launch_entraining_plume(time_plot, fac_fire)
                             elif plot.xaxis_key == "q":
-                                _, x_plot, _, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                _, x_plot, _, type_plume, z_plot, _ = run.launch_entraining_plume(time_plot, fac_fire)
                             elif plot.xaxis_key == "thetav":
-                                _, _, x_plot, type_plume, z_plot = run.launch_entraining_plume(time_plot, fac_fire)
+                                _, _, x_plot, type_plume, z_plot, _ = run.launch_entraining_plume(time_plot, fac_fire)
+                            elif plot.xaxis_key == "w":
+                                _, _, _, type_plume, z_plot, x_plot = run.launch_entraining_plume(time_plot, fac_fire)
 
                             marker_sizes = np.zeros_like(z_plot)
                             marker_sizes[::5] = np.where(type_plume[::5] > 0, 5, marker_sizes[::5])

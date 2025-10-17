@@ -306,7 +306,7 @@ class MixedLayerModel:
         if skewt:
             return exner_env[:i] * theta_plume[:i] - 273.15, type_plume[:i], p_env[:i] / 100.0
         else:
-            return theta_plume[:i], q_plume[:i] * 1e3, thetav_plume[:i], type_plume[:i], z[:i]
+            return theta_plume[:i], q_plume[:i] * 1e3, thetav_plume[:i], type_plume[:i], z[:i], w_plume[:i]
 
 
 class LinePlot:
@@ -331,7 +331,7 @@ class ProfilePlot:
 
 class PlumePlot:
     def __init__(self):
-        self.xaxis_options = ["theta", "q", "thetav"]
+        self.xaxis_options = ["theta", "q", "thetav", "w"]
         self.xaxis_index = 0
         self.xaxis_key = self.xaxis_options[0]
         self.time_plot = (0.0, 1.0)
